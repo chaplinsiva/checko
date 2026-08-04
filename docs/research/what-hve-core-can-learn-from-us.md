@@ -4,7 +4,7 @@ agent-notes: { ctx: "vteam-hybrid strengths HVE Core lacks", deps: [docs/researc
 
 # What HVE Core Can Learn from Us
 
-> **Source:** Comparison of [microsoft/hve-core](https://github.com/microsoft/hve-core) (35 agents, Copilot) vs vteam-hybrid (18 agents, Claude Code)
+> **Source:** Comparison of [microsoft/hve-core](https://github.com/microsoft/hve-core) (35 agents, Copilot) vs vteam-hybrid (18 agents, Antigravity)
 > **Reviewed:** 2026-03-02
 > **Companion doc:** `docs/research/what-we-learn-from-hve-core.md`
 
@@ -63,7 +63,7 @@ Vetoes must be documented with rationale. Escalation path: veto → Pat (product
 
 ### 6. Human Proxy Mode
 
-**What we do:** When the human declares unavailability, Pat answers product questions using `docs/product-context.md` as a guide, with explicit guardrails: Pat cannot approve ADRs, change scope, make architectural choices, merge, or override security/test vetoes. All decisions are logged in `.claude/handoff.md` for human review on return.
+**What we do:** When the human declares unavailability, Pat answers product questions using `docs/product-context.md` as a guide, with explicit guardrails: Pat cannot approve ADRs, change scope, make architectural choices, merge, or override security/test vetoes. All decisions are logged in `.agents/handoff.md` for human review on return.
 
 **What HVE does:** No equivalent. When the human is away, work stops or proceeds without product guidance.
 

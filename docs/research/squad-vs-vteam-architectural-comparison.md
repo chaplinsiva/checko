@@ -4,19 +4,19 @@ agent-notes:
   deps: [docs/methodology/personas.md, docs/methodology/phases.md, docs/process/team-governance.md, docs/research/what-we-learn-from-hve-core.md]
   state: active
   last: "archie@2026-03-21"
-  key: ["Squad = npm CLI + Copilot runtime, vteam = GitHub template + Claude Code runtime", "three-layer memory vs ADR+gotchas", "explicit coordinator vs implicit CLAUDE.md rules"]
+  key: ["Squad = npm CLI + Copilot runtime, vteam = GitHub template + Antigravity runtime", "three-layer memory vs ADR+gotchas", "explicit coordinator vs implicit AGENTS.md rules"]
 ---
 
 # Squad vs. vteam-hybrid: Architectural Comparison
 
-> **Source:** [bradygaster/squad](https://github.com/bradygaster/squad) (npm CLI, GitHub Copilot runtime) vs vteam-hybrid (GitHub repo template, Claude Code runtime)
+> **Source:** [bradygaster/squad](https://github.com/bradygaster/squad) (npm CLI, GitHub Copilot runtime) vs vteam-hybrid (GitHub repo template, Antigravity runtime)
 > **Reviewed:** 2026-03-21
 > **Author:** Archie (architecture lens)
 > **Companion docs:** `what-we-learn-from-hve-core.md`, `what-hve-core-can-learn-from-us.md`
 
 ## Executive Summary
 
-Squad and vteam-hybrid solve the same problem -- multi-agent AI team coordination -- but from opposite architectural starting points. Squad is a **runtime**: an npm package that generates and manages agent state through CLI commands, with GitHub Copilot as the AI backend. vteam-hybrid is a **template**: a static file structure that configures Claude Code's built-in orchestration through CLAUDE.md rules and subagent definitions. The structural differences follow directly from this distinction.
+Squad and vteam-hybrid solve the same problem -- multi-agent AI team coordination -- but from opposite architectural starting points. Squad is a **runtime**: an npm package that generates and manages agent state through CLI commands, with GitHub Copilot as the AI backend. vteam-hybrid is a **template**: a static file structure that configures Antigravity's built-in orchestration through AGENTS.md rules and subagent definitions. The structural differences follow directly from this distinction.
 
 Neither system is strictly superior. Squad excels at **approachability, knowledge accumulation, and runtime tooling**. vteam-hybrid excels at **governance, process rigor, and team composition dynamics**. The most impactful improvements we could make would borrow Squad's knowledge layering without importing its runtime dependency.
 
@@ -39,9 +39,9 @@ Each layer serves a different temporal scope:
 - **Decisions** are project-scoped policies that every agent reads before working (e.g., "use PostgreSQL, no Friday deploys").
 - **History** is personal context that compounds per-agent (e.g., "the auth module uses JWT with refresh tokens in src/auth/").
 
-**What we have instead:** ADRs (architecture decisions), `docs/process/gotchas.md` (agent-owned sections for patterns/anti-patterns), and Claude Code's built-in MEMORY.md. The information is there but lacks Squad's clean separation. Our gotchas.md mixes what Squad would split across skills and decisions. Our ADRs are more rigorous than Squad's decisions (they require debate and approval), but they also have higher friction -- you don't write an ADR for "always use single quotes."
+**What we have instead:** ADRs (architecture decisions), `docs/process/gotchas.md` (agent-owned sections for patterns/anti-patterns), and Antigravity's built-in MEMORY.md. The information is there but lacks Squad's clean separation. Our gotchas.md mixes what Squad would split across skills and decisions. Our ADRs are more rigorous than Squad's decisions (they require debate and approval), but they also have higher friction -- you don't write an ADR for "always use single quotes."
 
-**Assessment:** Squad's approach compounds faster for everyday conventions. A user saying "always use Prettier with tabs" creates a directive that every agent reads permanently. In our system, that same preference either goes into CLAUDE.md (high-friction, pollutes the root doc), gotchas.md (wrong semantic bucket), or gets lost between sessions.
+**Assessment:** Squad's approach compounds faster for everyday conventions. A user saying "always use Prettier with tabs" creates a directive that every agent reads permanently. In our system, that same preference either goes into AGENTS.md (high-friction, pollutes the root doc), gotchas.md (wrong semantic bucket), or gets lost between sessions.
 
 ### 1.2 The Scribe Pattern (Silent Background Knowledge Worker)
 
@@ -76,9 +76,9 @@ Squad's coordinator is a defined entity with explicit routing rules:
 
 This is a lookup table. Work arrives, the coordinator pattern-matches against routing rules, and dispatches to the right agent. The routing is inspectable (read the file), editable (change the file), and auditable (orchestration-log records every dispatch with rationale).
 
-**What we have instead:** Persona triggers embedded in `docs/process/team-governance.md` as a human-readable table, plus phase-selection logic in `docs/methodology/phases.md` as a Mermaid flowchart. The coordinator behavior is implicit -- Claude Code reads CLAUDE.md and makes routing decisions based on instruction-following, not a structured lookup.
+**What we have instead:** Persona triggers embedded in `docs/process/team-governance.md` as a human-readable table, plus phase-selection logic in `docs/methodology/phases.md` as a Mermaid flowchart. The coordinator behavior is implicit -- Antigravity reads AGENTS.md and makes routing decisions based on instruction-following, not a structured lookup.
 
-**Assessment:** Squad's approach is more debuggable. When routing goes wrong, you read `routing.md` and the `orchestration-log/` to see exactly why Agent X got the work. In our system, routing is emergent from Claude Code's interpretation of our governance docs, which is harder to audit. The trade-off is that our phase-based composition is richer -- we don't just route to a single agent, we assemble a team with defined interaction patterns (blackboard, ensemble, pipeline). Squad routes to individuals; we compose teams.
+**Assessment:** Squad's approach is more debuggable. When routing goes wrong, you read `routing.md` and the `orchestration-log/` to see exactly why Agent X got the work. In our system, routing is emergent from Antigravity's interpretation of our governance docs, which is harder to audit. The trade-off is that our phase-based composition is richer -- we don't just route to a single agent, we assemble a team with defined interaction patterns (blackboard, ensemble, pipeline). Squad routes to individuals; we compose teams.
 
 ### 1.4 SDK-First Configuration (`squad.config.ts`)
 
@@ -92,13 +92,13 @@ Squad's builder-function approach (`defineSquad`, `defineAgent`, `defineRouting`
 export default defineSquad({
   team: defineTeam({ name: 'Core', members: ['@edie'] }),
   agents: [
-    defineAgent({ name: 'edie', role: 'TS Engineer', model: 'claude-sonnet-4' }),
+    defineAgent({ name: 'edie', role: 'TS Engineer', model: 'antigravity-sonnet-4' }),
   ],
   routing: defineRouting({ rules: [...], fallback: 'coordinator' }),
 });
 ```
 
-**What we have instead:** Hand-authored markdown agent definitions in `.claude/agents/*.md` with YAML frontmatter. No build step, no validation, no drift detection.
+**What we have instead:** Hand-authored markdown agent definitions in `.agents/agents/*.md` with YAML frontmatter. No build step, no validation, no drift detection.
 
 **Assessment:** The SDK approach is more robust for teams that modify agent definitions frequently. Our markdown-first approach is simpler for template consumers who just want to start using the system without a build step. For a template project, markdown-first is the right default. But we should consider schema validation for agent-notes (item 10 from the HVE comparison).
 
@@ -210,8 +210,8 @@ The coordinator does not do domain work. It routes, dispatches, and synthesizes.
 
 ### vteam-hybrid's Implicit Coordinator
 
-We have no named coordinator entity. Claude Code itself acts as the coordinator by:
-- Reading CLAUDE.md, which references governance docs
+We have no named coordinator entity. Antigravity itself acts as the coordinator by:
+- Reading AGENTS.md, which references governance docs
 - Following persona trigger rules from `team-governance.md`
 - Following phase selection logic from `phases.md`
 - Spawning subagents via the Task tool when triggered
@@ -226,8 +226,8 @@ We have no named coordinator entity. Claude Code itself acts as the coordinator 
 | **Team composition** | Single-agent routing | Multi-agent team assembly with interaction models |
 | **Auditability** | High -- every dispatch logged with rationale | Low -- no structured dispatch log |
 | **Failure modes** | Misroute (wrong agent gets work) | Mis-composition (wrong team assembled) or process skip |
-| **User control** | Edit routing.md or name an agent directly | Edit CLAUDE.md or invoke a persona directly |
-| **Runtime dependency** | Requires Squad CLI installed | No dependency -- CLAUDE.md is read natively |
+| **User control** | Edit routing.md or name an agent directly | Edit AGENTS.md or invoke a persona directly |
+| **Runtime dependency** | Requires Squad CLI installed | No dependency -- AGENTS.md is read natively |
 
 **Verdict:** These are genuinely different architectures with different strengths. Squad's explicitness is better for debugging and auditing. Our implicitness is better for flexible team composition and handling novel situations. The gap in auditability is worth closing -- we could add dispatch logging without changing our coordinator model.
 
@@ -279,7 +279,7 @@ Knowledge flows through formal processes: discovery -> documentation -> governan
 **Weaknesses:**
 - High friction -- writing an ADR for "use single quotes" is overkill
 - No equivalent to Squad's directives for quick preference capture
-- Session-to-session continuity relies on MEMORY.md (Claude Code feature) and `/handoff` (manual process)
+- Session-to-session continuity relies on MEMORY.md (Antigravity feature) and `/handoff` (manual process)
 - No portable skills concept -- knowledge is project-bound
 
 ### Verdict
@@ -351,7 +351,7 @@ For a **template project** used by many different people, discoverability wins o
 
 **Implementation:**
 - Add `docs/team-directives.md` with append-only convention entries.
-- Add a rule to CLAUDE.md: "When the human says 'always', 'never', 'from now on', or 'remember to', append to `docs/team-directives.md`."
+- Add a rule to AGENTS.md: "When the human says 'always', 'never', 'from now on', or 'remember to', append to `docs/team-directives.md`."
 - All agent definitions include `docs/team-directives.md` in their deps.
 - The Scope Reduction Gate does not apply to directives (they are lightweight by design).
 
@@ -362,10 +362,10 @@ For a **template project** used by many different people, discoverability wins o
 ### 6.2 Add Per-Agent Knowledge Files (High Impact, Medium Effort)
 
 **Borrow:** Squad's per-agent `history.md` pattern.
-**Adapt:** Add `.claude/knowledge/{agent-name}.md` files where agents append project-specific learnings after completing work. Different from gotchas.md (which is cross-cutting) -- these are domain-specific context that helps the agent resume faster.
+**Adapt:** Add `.agents/knowledge/{agent-name}.md` files where agents append project-specific learnings after completing work. Different from gotchas.md (which is cross-cutting) -- these are domain-specific context that helps the agent resume faster.
 
 **Implementation:**
-- Create `.claude/knowledge/` directory.
+- Create `.agents/knowledge/` directory.
 - Each agent appends discoveries after significant work (not every invocation -- only when something novel is learned).
 - Progressive summarization at ~8KB (smaller than Squad's 12KB threshold since our context windows are used differently).
 - Agent definitions reference their own knowledge file.
@@ -400,7 +400,7 @@ For a **template project** used by many different people, discoverability wins o
 
 ### 6.5 Do NOT Add: An Explicit Coordinator Entity
 
-Squad's explicit coordinator is architecturally elegant but would be the wrong change for us. Our implicit coordinator (Claude Code + CLAUDE.md) enables flexible team composition that an explicit routing table cannot express. The right fix for our auditability gap is dispatch logging (6.3), not replacing our coordinator model.
+Squad's explicit coordinator is architecturally elegant but would be the wrong change for us. Our implicit coordinator (Antigravity + AGENTS.md) enables flexible team composition that an explicit routing table cannot express. The right fix for our auditability gap is dispatch logging (6.3), not replacing our coordinator model.
 
 ### 6.6 Do NOT Add: The Casting System
 
@@ -413,15 +413,15 @@ Themed fictional names are engaging but reduce approachability for a template pr
 | Dimension | Squad | vteam-hybrid | Edge |
 |-----------|-------|-------------|------|
 | Distribution model | npm CLI package | GitHub repo template | Different, not comparable |
-| AI runtime | GitHub Copilot | Claude Code | Different, not comparable |
+| AI runtime | GitHub Copilot | Antigravity | Different, not comparable |
 | Knowledge layering | 3-layer (skills/decisions/history) | 2-layer (ADRs + gotchas) | Squad |
-| Directive capture | Automatic signal-word detection | Manual (CLAUDE.md or gotchas) | Squad |
+| Directive capture | Automatic signal-word detection | Manual (AGENTS.md or gotchas) | Squad |
 | Decision quality | Organic, unreviewed | Debated, gated, approved | vteam-hybrid |
 | Team composition | Single-agent routing | Phase-dependent multi-agent teams | vteam-hybrid |
 | Interaction models | Fan-out/collect only | Blackboard, pipeline, ensemble, market | vteam-hybrid |
 | Governance | Reviewer gates, ceremonies | Vetoes, gates, debate, escalation | vteam-hybrid |
 | Adversarial challenge | None (code-level only via waingro) | Wei + Architecture Gate + debate protocol | vteam-hybrid |
-| Coordinator model | Explicit routing engine | Implicit (CLAUDE.md rules) | Trade-off |
+| Coordinator model | Explicit routing engine | Implicit (AGENTS.md rules) | Trade-off |
 | Auditability | Orchestration log + routing rules | Debate tracking only | Squad |
 | Agent naming | Themed fictional (Usual Suspects) | Descriptive with personality (Archie, Tara) | Trade-off |
 | SDK/type safety | `squad.config.ts` with builders | Markdown with YAML frontmatter | Squad |

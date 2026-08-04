@@ -9,7 +9,7 @@ agent-notes: { ctx: "UX gap analysis comparing Squad and vteam-hybrid interactio
 > **Status:** Research -- not yet implemented
 > **Source:** [bradygaster/squad](https://github.com/bradygaster/squad) vs vteam-hybrid template system
 
-This analysis examines interaction design differences between Squad's CLI-shell model and our CLAUDE.md-driven template model. The goal is concrete, implementable improvements -- not "make it prettier."
+This analysis examines interaction design differences between Squad's CLI-shell model and our AGENTS.md-driven template model. The goal is concrete, implementable improvements -- not "make it prettier."
 
 ---
 
@@ -30,16 +30,16 @@ The user learns by doing. Each layer is hidden until the previous one is mastere
 
 Our system uses a **front-loaded model**:
 
-1. Create repo from GitHub template -- this produces a repo with 25+ markdown files, 19 agent definitions, 25 slash commands, and a CLAUDE.md that references 10+ other documents.
-2. The user is expected to read CLAUDE.md (150+ lines), which references `docs/methodology/phases.md`, `docs/methodology/personas.md`, `docs/process/team-governance.md`, and more.
+1. Create repo from GitHub template -- this produces a repo with 25+ markdown files, 19 agent definitions, 25 slash commands, and a AGENTS.md that references 10+ other documents.
+2. The user is expected to read AGENTS.md (150+ lines), which references `docs/methodology/phases.md`, `docs/methodology/personas.md`, `docs/process/team-governance.md`, and more.
 3. The Session Entry Protocol requires the user to answer three questions before writing any code.
 4. Phase selection, agent invocation, and workflow are all documented but not guided.
 
 ### The UX cost
 
-**Cognitive load at entry.** A new user faces CLAUDE.md's 150 lines, a Phase Selection Flowchart, a 7-phase model with 18 agents, and governance rules they need to internalize before writing a line of code. Squad's equivalent moment is: `squad init`. The information asymmetry at the onboarding boundary is significant.
+**Cognitive load at entry.** A new user faces AGENTS.md's 150 lines, a Phase Selection Flowchart, a 7-phase model with 18 agents, and governance rules they need to internalize before writing a line of code. Squad's equivalent moment is: `squad init`. The information asymmetry at the onboarding boundary is significant.
 
-**The "which doc do I read?" problem.** Our Process Docs Index lists 12 documents. A user who wants to know "how do I start?" must mentally trace the path: CLAUDE.md -> Session Entry Protocol -> /kickoff -> phases.md -> personas.md. Squad's equivalent: type `squad`.
+**The "which doc do I read?" problem.** Our Process Docs Index lists 12 documents. A user who wants to know "how do I start?" must mentally trace the path: AGENTS.md -> Session Entry Protocol -> /kickoff -> phases.md -> personas.md. Squad's equivalent: type `squad`.
 
 ### Concrete improvements
 
@@ -47,11 +47,11 @@ Our system uses a **front-loaded model**:
 - Detect whether this is a fresh-from-template repo or an existing project.
 - If fresh: run the essential setup (repo name, tech stack, initial scaffolding), then hand off to `/kickoff` for discovery.
 - If existing: run `/resume` automatically.
-- The user never needs to read CLAUDE.md first. The command bootstraps context.
+- The user never needs to read AGENTS.md first. The command bootstraps context.
 
-**B. Introduce a "Phase 0: Orientation" in CLAUDE.md.** Before the Session Entry Protocol's three questions, add: "If this is your first session, run `/kickoff`. If you're continuing, run `/resume`. Everything else flows from there." Two sentences, two paths, zero ambiguity.
+**B. Introduce a "Phase 0: Orientation" in AGENTS.md.** Before the Session Entry Protocol's three questions, add: "If this is your first session, run `/kickoff`. If you're continuing, run `/resume`. Everything else flows from there." Two sentences, two paths, zero ambiguity.
 
-**C. Lazy-load governance docs.** Instead of the Process Docs Index listing 12 documents upfront, have each slash command pull in its relevant governance docs when invoked. The user learns about the Architecture Gate when `/adr` is invoked, not when they first open CLAUDE.md. This is what Squad's shell does -- it teaches at the moment of relevance.
+**C. Lazy-load governance docs.** Instead of the Process Docs Index listing 12 documents upfront, have each slash command pull in its relevant governance docs when invoked. The user learns about the Architecture Gate when `/adr` is invoked, not when they first open AGENTS.md. This is what Squad's shell does -- it teaches at the moment of relevance.
 
 ---
 
@@ -68,13 +68,13 @@ Squad's interactive shell is a **persistent interaction context**. You type `squ
 
 ### What we have instead
 
-Claude Code itself is already a persistent interactive session. We don't need to build a shell -- we have one. But we don't treat it as one.
+Antigravity itself is already a persistent interactive session. We don't need to build a shell -- we have one. But we don't treat it as one.
 
 Our interaction model is **command-invocation based**: the user types `/kickoff`, `/sprint-boundary`, `/handoff`. Between commands, the user interacts with the coordinator directly using natural language. There is no `@agent` addressing -- the coordinator decides which agents to invoke based on rules.
 
 ### Could we have a shell equivalent?
 
-**We already do, and it is Claude Code.** The gap is not the shell itself -- it is the discoverability and guidance layer on top of it. Squad's shell teaches you what's possible. Claude Code's session is open-ended, which is powerful but disorienting for new users.
+**We already do, and it is Antigravity.** The gap is not the shell itself -- it is the discoverability and guidance layer on top of it. Squad's shell teaches you what's possible. Antigravity's session is open-ended, which is powerful but disorienting for new users.
 
 ### Concrete improvements
 
@@ -119,7 +119,7 @@ Our system supports explicit invocation, but the syntax is clunky. The user must
 
 ### Concrete improvements
 
-**F. Document the `@agent` invocation pattern explicitly.** In CLAUDE.md, add a section: "To invoke a specific agent, address them by name: 'Pierrot, review this endpoint for security concerns.' The coordinator will spawn them as a subagent." This makes the implicit explicit.
+**F. Document the `@agent` invocation pattern explicitly.** In AGENTS.md, add a section: "To invoke a specific agent, address them by name: 'Pierrot, review this endpoint for security concerns.' The coordinator will spawn them as a subagent." This makes the implicit explicit.
 
 **G. Create per-agent shortcut commands for common invocations.** Beyond the existing `/design` (Dani) and `/code-review` (composite), add:
 - `/challenge <topic>` -- invokes Wei to challenge a decision.
@@ -144,7 +144,7 @@ These are ergonomic shortcuts for experienced users who know what they want.
 
 ### What we do
 
-- Agent output appears inline in the Claude Code session.
+- Agent output appears inline in the Antigravity session.
 - No progress indicators for parallel agent work.
 - Tracking artifacts exist (`docs/tracking/`) but are produced after the fact, not during.
 - No equivalent of `decisions.md` as a live document -- our ADRs and tracking artifacts serve this role but are heavier weight.
@@ -199,14 +199,14 @@ This is zero-cost (just formatting discipline) and immediately improves visibili
 - `/sprint-boundary` Step 0 has a blocking pre-flight gate.
 - `/kickoff` Phase 5 checks GitHub access before board creation.
 - There is no general-purpose diagnostic command.
-- There is no first-run gating -- the system assumes CLAUDE.md has been read.
+- There is no first-run gating -- the system assumes AGENTS.md has been read.
 - Error handling for bad state is scattered across individual commands.
 
 ### The gap
 
 **No unified diagnostic command.** If something is wrong (GitHub auth expired, board misconfigured, missing status options, stale handoff), the user discovers it when a command fails mid-execution. Squad's `squad doctor` catches these problems proactively.
 
-**No first-run detection.** A user who creates a repo from our template and starts typing without reading CLAUDE.md will get no warning. They'll hit Session Entry Protocol violations and wonder why the system is asking them questions about work items before they've even described their project.
+**No first-run detection.** A user who creates a repo from our template and starts typing without reading AGENTS.md will get no warning. They'll hit Session Entry Protocol violations and wonder why the system is asking them questions about work items before they've even described their project.
 
 ### Concrete improvements
 
@@ -221,10 +221,10 @@ This is zero-cost (just formatting discipline) and immediately improves visibili
 
 This command costs almost nothing to build and catches the class of errors that currently surface mid-workflow.
 
-**M. First-run detection in CLAUDE.md.** Add a conditional instruction at the very top of CLAUDE.md:
+**M. First-run detection in AGENTS.md.** Add a conditional instruction at the very top of AGENTS.md:
 
 ```
-If no `docs/product-context.md` exists and no `.claude/handoff.md` exists, this is a new project.
+If no `docs/product-context.md` exists and no `.agents/handoff.md` exists, this is a new project.
 Before doing anything else, run `/kickoff <user's request>`.
 Do not apply the Session Entry Protocol -- kickoff handles it.
 ```
@@ -246,7 +246,7 @@ When you step away from Squad and come back, the breadcrumb trail is comprehensi
 
 ### What we do
 
-- `.claude/handoff.md` -- written on `/handoff`, captures session state.
+- `.agents/handoff.md` -- written on `/handoff`, captures session state.
 - `docs/tracking/` -- phase tracking artifacts with Key Decisions sections.
 - `docs/sprints/sprint-N-plan.md` -- sprint plans with wave breakdowns.
 - `docs/retrospectives/` -- sprint retros.
@@ -271,7 +271,7 @@ Squad's session persistence handles crashes automatically. Our system does not.
 
 This is lower-overhead than Squad's full orchestration log, but captures the routing decisions that currently vanish.
 
-**P. "Where was I?" recovery.** If a user starts a session without running `/resume` (they just open Claude Code and start talking), the coordinator should detect the existence of `.claude/handoff.md` and proactively suggest: "I see a handoff from [date]. Would you like me to resume from there, or are you starting fresh?" This is the self-healing equivalent of Squad's crash resume.
+**P. "Where was I?" recovery.** If a user starts a session without running `/resume` (they just open Antigravity and start talking), the coordinator should detect the existence of `.agents/handoff.md` and proactively suggest: "I see a handoff from [date]. Would you like me to resume from there, or are you starting fresh?" This is the self-healing equivalent of Squad's crash resume.
 
 ---
 
@@ -286,7 +286,7 @@ Squad's CLI uses emoji extensively for agent identity (architect icon, tester ic
 
 ### What we do
 
-Our system is text-based (markdown files and Claude Code's chat interface), which is inherently more accessible:
+Our system is text-based (markdown files and Antigravity's chat interface), which is inherently more accessible:
 - Agent output is identified by name in text, not by emoji.
 - No color dependencies for information.
 - All artifacts are plain markdown -- universally parseable.
@@ -315,11 +315,11 @@ However:
 
 | ID | Improvement | Effort | Impact |
 |----|------------|--------|--------|
-| B | "Phase 0: Orientation" -- two lines in CLAUDE.md | Trivial | Eliminates onboarding confusion |
-| F | Document `@agent` invocation pattern in CLAUDE.md | Trivial | Makes implicit pattern explicit |
+| B | "Phase 0: Orientation" -- two lines in AGENTS.md | Trivial | Eliminates onboarding confusion |
+| F | Document `@agent` invocation pattern in AGENTS.md | Trivial | Makes implicit pattern explicit |
 | I | Structured output headers for subagent work | Trivial | Immediate visibility improvement |
 | K | Progress narration for parallel work | Trivial | Sets expectations during waits |
-| M | First-run detection in CLAUDE.md | Trivial | Prevents most common onboarding failure |
+| M | First-run detection in AGENTS.md | Trivial | Prevents most common onboarding failure |
 | P | "Where was I?" recovery detection | Low | Self-healing session continuity |
 | Q | Text alternatives for Mermaid diagrams | Low | Accessibility compliance |
 
@@ -338,7 +338,7 @@ However:
 
 | ID | Improvement | Effort | Impact |
 |----|------------|--------|--------|
-| C | Lazy-load governance docs per command | High | Reduces CLAUDE.md size; structural change |
+| C | Lazy-load governance docs per command | High | Reduces AGENTS.md size; structural change |
 | G | Per-agent shortcut commands | Medium | Ergonomic for power users |
 | H | Agent identity headers in output | Low | Visual clarity |
 | O | Lightweight orchestration notes | Medium | Audit trail for routing decisions |
@@ -357,4 +357,4 @@ vteam-hybrid says: "Read the documentation. Understand the methodology. Then the
 
 Squad optimizes for **onboarding delight**. We optimize for **execution rigor**. Both are valid, but they serve different moments in the user journey. The improvements above are not about becoming Squad -- they are about reducing the tax we impose on the first 10 minutes without sacrificing the rigor that makes the next 10 sprints work.
 
-The most impactful single change would be improvements B + M together: a two-line orientation clause in CLAUDE.md that detects new projects and routes them to `/kickoff`, combined with first-run detection that prevents the Session Entry Protocol from firing on an uninitialized project. This alone would transform our onboarding from "read 150 lines of documentation" to "run one command."
+The most impactful single change would be improvements B + M together: a two-line orientation clause in AGENTS.md that detects new projects and routes them to `/kickoff`, combined with first-run detection that prevents the Session Entry Protocol from firing on an uninitialized project. This alone would transform our onboarding from "read 150 lines of documentation" to "run one command."

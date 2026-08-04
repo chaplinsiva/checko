@@ -75,7 +75,7 @@ HVE Core is Microsoft's enterprise-grade prompt engineering framework for GitHub
 - `.copilot-tracking/reviews/YYYY-MM-DD/` — review findings
 - `.copilot-tracking/memory/` — session persistence
 
-**What we do:** We use `.claude/handoff.md` for session handoffs, `docs/sprints/` for sprint plans, and `docs/retrospectives/` for retros. Tracking artifacts are in `docs/tracking/`.
+**What we do:** We use `.agents/handoff.md` for session handoffs, `docs/sprints/` for sprint plans, and `docs/retrospectives/` for retros. Tracking artifacts are in `docs/tracking/`.
 
 **Why it matters:** HVE's approach makes every session fully auditable and resumable. The date-stamped directory structure means artifacts never collide and the history is browsable. Our approach works but is more scattered.
 
