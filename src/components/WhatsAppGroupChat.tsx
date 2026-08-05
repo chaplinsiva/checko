@@ -144,10 +144,21 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
   };
 
   const handleSaveTopic = () => {
-    if (topicInput.trim()) {
-      setTopic(topicInput.trim());
+    const newTopic = topicInput.trim();
+    if (newTopic && newTopic !== topic) {
+      resetDebate();
+      setTopic(newTopic);
     }
     setIsEditingTopic(false);
+  };
+
+  const handleCreateNewChat = () => {
+    resetDebate();
+    const newTopic = 'New Debate Motion #' + Math.floor(1000 + Math.random() * 9000);
+    setTopic(newTopic);
+    setTopicInput(newTopic);
+    setIsEditingTopic(true);
+    setIsChatsDrawerOpen(false);
   };
 
 
@@ -275,6 +286,16 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
           </button>
 
 
+
+          {/* New Chat Button */}
+          <button
+            onClick={handleCreateNewChat}
+            className="px-3 py-1.5 bg-[#00a884] hover:bg-teal-600 text-white border border-teal-500/50 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors shadow-md"
+            title="Create New Debate Chat"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">New Chat</span>
+          </button>
 
           {/* Debug / Token Stats Button */}
           <button
@@ -679,10 +700,7 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
               </h2>
             </div>
             <button
-              onClick={() => {
-                setIsChatsDrawerOpen(false);
-                setIsEditingTopic(true);
-              }}
+              onClick={handleCreateNewChat}
               className="px-3 py-1.5 bg-[#00a884] text-white text-xs font-bold rounded-xl shadow-md hover:bg-teal-600 transition-colors flex items-center gap-1"
             >
               <Plus className="w-4 h-4" /> New Group Chat
