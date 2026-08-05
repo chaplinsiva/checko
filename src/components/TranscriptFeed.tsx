@@ -4,13 +4,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { DebateTurn, Persona, UserProfile } from '@/types/debate';
 import { MinimizedPayload } from '@/lib/token-minimizer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, ChevronDown, ChevronUp, Layers } from 'lucide-react';
+import { Cpu, ChevronDown, ChevronUp, Layers, Volume2 } from 'lucide-react';
 
 interface TranscriptFeedProps {
   turns: DebateTurn[];
   activePersonas: Persona[];
   userProfile: UserProfile;
   lastPayload: MinimizedPayload | null;
+  onPlayTurnVoice?: (turn: DebateTurn) => void;
+  currentlySpeakingTurnId?: string | null;
 }
 
 export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
@@ -18,6 +20,8 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
   activePersonas,
   userProfile,
   lastPayload,
+  onPlayTurnVoice,
+  currentlySpeakingTurnId,
 }) => {
   const [showDebugger, setShowDebugger] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -119,9 +123,24 @@ export const TranscriptFeed: React.FC<TranscriptFeedProps> = ({
                           </span>
                         )}
                       </span>
-                      <span className="text-[10px] text-slate-500 uppercase font-semibold">
-                        {turn.phase}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {onPlayTurnVoice && (
+                          <button
+                            onClick={() => onPlayTurnVoice(turn)}
+                            title="Replay Voice Audio"
+                            className={`p-1 rounded-lg hover:bg-slate-800 transition-colors ${
+                              currentlySpeakingTurnId === turn.id
+                                ? 'text-rose-400 animate-pulse'
+                                : 'text-slate-500 hover:text-slate-200'
+                            }`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <span className="text-[10px] text-slate-500 uppercase font-semibold">
+                          {turn.phase}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Turn Content */}

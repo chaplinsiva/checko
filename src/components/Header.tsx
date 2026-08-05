@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { DebateMode, TokenStats, UserProfile } from '@/types/debate';
 import { getStoredApiKey } from '@/lib/gemini';
 import { Key, Sparkles, User, Settings, Zap } from 'lucide-react';
+import { SpeechControls } from './SpeechControls';
 
 interface HeaderProps {
   mode: DebateMode;
@@ -12,6 +13,10 @@ interface HeaderProps {
   userProfile: UserProfile;
   setUserProfile: (profile: UserProfile) => void;
   onOpenCharacterModal: () => void;
+  isMuted?: boolean;
+  isSpeaking?: boolean;
+  toggleMute?: () => void;
+  stopSpeech?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,6 +26,10 @@ export const Header: React.FC<HeaderProps> = ({
   userProfile,
   setUserProfile,
   onOpenCharacterModal,
+  isMuted,
+  isSpeaking,
+  toggleMute,
+  stopSpeech,
 }) => {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
@@ -75,6 +84,16 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Controls & Token Counter */}
         <div className="flex items-center space-x-3">
+          {/* TTS Audio Controls */}
+          {toggleMute && (
+            <SpeechControls
+              isMuted={Boolean(isMuted)}
+              isSpeaking={Boolean(isSpeaking)}
+              toggleMute={toggleMute}
+              stopSpeech={stopSpeech}
+            />
+          )}
+
           {/* Live Token Savings Meter */}
           <div className="hidden md:flex items-center space-x-2 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs text-emerald-400">
             <Zap className="w-4 h-4 text-emerald-400 animate-bounce" />

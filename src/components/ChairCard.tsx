@@ -13,6 +13,7 @@ interface ChairCardProps {
   maxTimerSeconds: number;
   isUserChair?: boolean;
   userName?: string;
+  isSpeakingVoice?: boolean;
   onClickChair?: () => void;
 }
 
@@ -24,6 +25,7 @@ export const ChairCard: React.FC<ChairCardProps> = ({
   maxTimerSeconds,
   isUserChair = false,
   userName = 'User',
+  isSpeakingVoice = false,
   onClickChair,
 }) => {
   const strokeDashoffset =
@@ -94,12 +96,23 @@ export const ChairCard: React.FC<ChairCardProps> = ({
               {isUserChair ? userName : persona.name}
             </h3>
 
-            {isActiveSpeaker && (
-              <span className="flex items-center gap-1 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">
-                <Mic className="w-3 h-3" />
-                {isGenerating ? 'Thinking...' : `${timerSeconds}s`}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5">
+              {/* Voice Equalizer Soundwave Indicator */}
+              {isSpeakingVoice && (
+                <div className="flex items-end space-x-0.5 h-3 px-1">
+                  <div className="w-0.5 h-full bg-rose-400 animate-[bounce_1s_infinite_100ms]" />
+                  <div className="w-0.5 h-full bg-rose-400 animate-[bounce_1s_infinite_300ms]" />
+                  <div className="w-0.5 h-full bg-rose-400 animate-[bounce_1s_infinite_200ms]" />
+                </div>
+              )}
+
+              {isActiveSpeaker && (
+                <span className="flex items-center gap-1 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">
+                  <Mic className="w-3 h-3" />
+                  {isGenerating ? 'Thinking...' : `${timerSeconds}s`}
+                </span>
+              )}
+            </div>
           </div>
 
           <p className="text-xs text-slate-400 truncate">

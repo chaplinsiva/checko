@@ -25,8 +25,8 @@ import {
   Edit2,
   ArrowLeft,
   Users,
+  Volume2,
 } from 'lucide-react';
-
 
 interface WhatsAppGroupChatProps {
   topic: string;
@@ -52,6 +52,8 @@ interface WhatsAppGroupChatProps {
   setUserProfile: (p: UserProfile) => void;
   tokenStats: TokenStats;
   lastPayload: MinimizedPayload | null;
+  onPlayTurnVoice?: (turn: DebateTurn) => void;
+  currentlySpeakingTurnId?: string | null;
 }
 
 const PRESET_GROUPS = [
@@ -116,6 +118,8 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
   setUserProfile,
   tokenStats,
   lastPayload,
+  onPlayTurnVoice,
+  currentlySpeakingTurnId,
 }) => {
   const [inputText, setInputText] = useState('');
   const [isEditingTopic, setIsEditingTopic] = useState(false);
@@ -454,11 +458,26 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
                   <span className="text-xs font-bold truncate" style={{ color: color }}>
                     {turn.speakerName}
                   </span>
-                  {speakerPersona?.title && (
-                    <span className="text-[10px] text-[#8696a0] truncate font-medium hidden sm:inline">
-                      {speakerPersona.title}
-                    </span>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {onPlayTurnVoice && (
+                      <button
+                        onClick={() => onPlayTurnVoice(turn)}
+                        title="Replay Voice Audio"
+                        className={`p-1 rounded hover:bg-[#2a3942] transition-colors ${
+                          currentlySpeakingTurnId === turn.id
+                            ? 'text-[#00a884] animate-pulse'
+                            : 'text-[#8696a0] hover:text-[#e9edef]'
+                        }`}
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {speakerPersona?.title && (
+                      <span className="text-[10px] text-[#8696a0] truncate font-medium hidden sm:inline">
+                        {speakerPersona.title}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <p className="text-sm leading-relaxed whitespace-pre-wrap font-sans text-[#d1d7db]">

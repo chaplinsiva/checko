@@ -2,6 +2,13 @@ export type DebateMode = '1v1' | '2v2' | 'group';
 
 export type DebatePhase = 'greeting' | 'stance' | 'debate';
 
+export interface PersonaVoiceProfile {
+  pitch: number; // 0.5 to 1.5
+  rate: number;  // 0.5 to 1.5
+  lang?: string; // e.g., 'en-US', 'en-GB'
+  genderHint?: 'male' | 'female' | 'neutral';
+}
+
 export interface Persona {
   id: string;
   name: string;
@@ -13,6 +20,7 @@ export interface Persona {
   avatarIcon?: string;
   avatarImage?: string;
   isCustom?: boolean;
+  voiceProfile?: PersonaVoiceProfile;
 }
 
 export interface DebateTurn {

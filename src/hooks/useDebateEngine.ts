@@ -11,6 +11,7 @@ import {
 import { getAllPersonas } from '@/lib/personas';
 import { prepareMinimizedPayload, MinimizedPayload } from '@/lib/token-minimizer';
 import { generateDebateTurnResponse } from '@/lib/gemini';
+import { useTextToSpeech } from './useTextToSpeech';
 
 export interface DebateEngineOptions {
   initialTopic?: string;
@@ -32,6 +33,8 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
   const [userProfile, setUserProfileState] = useState<UserProfile>(
     options.userProfile || { name: 'Alex', role: 'debater' }
   );
+
+  const tts = useTextToSpeech();
 
   // Sync topic, userProfile, and active personas from localStorage on mount
   useEffect(() => {
@@ -215,6 +218,9 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
 
         setTurns((prev) => [...prev, newTurn]);
 
+        // Auto-trigger Text-To-Speech voice narration for new turn
+        tts.speak(responseText, speaker, newTurn.id);
+
         // Update token stats
         const outputTokens = Math.ceil(responseText.length / 4);
         setTokenStats((prev) => ({
@@ -229,7 +235,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
         setTimerSeconds(turnDelay);
       }
     },
-    [isGenerating, activePersonas, turns, topic, stateSummary, userProfile, turnDelay]
+    [isGenerating, activePersonas, turns, topic, stateSummary, userProfile, turnDelay, tts]
   );
 
   const triggerNextTurn = useCallback(() => {
@@ -287,6 +293,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     setTurns([]);
     setIsPaused(true);
     setTimerSeconds(turnDelay);
+    tts.stop();
     if (typeof window !== 'undefined') {
       try {
         const topicKey = `checko_turns_${topic}`;
@@ -297,6 +304,14 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
       }
     }
   };
+
+  const playTurnVoice = useCallback(
+    (turn: DebateTurn) => {
+      const speaker = availablePersonas.find((p) => p.id === turn.speakerId);
+      tts.speak(turn.content, speaker, turn.id);
+    },
+    [availablePersonas, tts]
+  );
 
   return {
     topic,
@@ -322,5 +337,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     resetDebate,
     tokenStats,
     lastPayload,
+    tts,
+    playTurnVoice,
   };
 }

@@ -23,6 +23,7 @@ interface DebateStageProps {
   resetDebate: () => void;
   userProfile: UserProfile;
   onOpenUserDock: () => void;
+  currentlySpeakingSpeakerId?: string | null;
 }
 
 const SAMPLE_TOPICS = [
@@ -50,6 +51,7 @@ export const DebateStage: React.FC<DebateStageProps> = ({
   resetDebate,
   userProfile,
   onOpenUserDock,
+  currentlySpeakingSpeakerId,
 }) => {
   return (
     <div className="w-full bg-slate-950/60 rounded-3xl border border-slate-800/80 p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden">
@@ -146,6 +148,7 @@ export const DebateStage: React.FC<DebateStageProps> = ({
             isGenerating={isGenerating}
             timerSeconds={timerSeconds}
             maxTimerSeconds={turnDelay}
+            isSpeakingVoice={currentlySpeakingSpeakerId === activePersonas[0].id}
           />
         )}
 
@@ -177,6 +180,7 @@ export const DebateStage: React.FC<DebateStageProps> = ({
             isGenerating={isGenerating}
             timerSeconds={timerSeconds}
             maxTimerSeconds={turnDelay}
+            isSpeakingVoice={currentlySpeakingSpeakerId === activePersonas[1].id}
           />
         )}
       </div>
