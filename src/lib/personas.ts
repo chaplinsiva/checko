@@ -11,6 +11,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#3B82F6', // Royal Blue
     avatarIcon: '⚛️',
     avatarImage: '/albert.jpg',
+    voiceProfile: { pitch: 0.9, rate: 0.95, lang: 'en-US', genderHint: 'male' },
   },
   {
     id: 'hawking',
@@ -22,6 +23,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#6366F1', // Indigo Deep
     avatarIcon: '🚀',
     avatarImage: '/stephen.jpg',
+    voiceProfile: { pitch: 1.0, rate: 0.85, lang: 'en-US', genderHint: 'male' },
   },
   {
     id: 'buddha',
@@ -33,6 +35,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#EAB308', // Golden Lotus
     avatarIcon: '🪷',
     avatarImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Buddha_in_Sarnath_Museum_%28Dhammajak_Mutra%29.jpg/440px-Buddha_in_Sarnath_Museum_%28Dhammajak_Mutra%29.jpg',
+    voiceProfile: { pitch: 0.85, rate: 0.8, lang: 'en-US', genderHint: 'male' },
   },
   {
     id: 'chaplin',
@@ -44,6 +47,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#E11D48', // Crimson Rose
     avatarIcon: '🎭',
     avatarImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Charlie_Chaplin.jpg/440px-Charlie_Chaplin.jpg',
+    voiceProfile: { pitch: 1.15, rate: 1.05, lang: 'en-GB', genderHint: 'male' },
   },
   {
     id: 'tesla',
@@ -55,6 +59,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#0EA5E9', // Cyan Electric
     avatarIcon: '⚡',
     avatarImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Tesla_circa_1890.jpeg/440px-Tesla_circa_1890.jpeg',
+    voiceProfile: { pitch: 0.95, rate: 0.9, lang: 'en-US', genderHint: 'male' },
   },
   {
     id: 'edison',
@@ -66,6 +71,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#F59E0B', // Amber Gold
     avatarIcon: '💡',
     avatarImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Thomas_Edison2.jpg/440px-Thomas_Edison2.jpg',
+    voiceProfile: { pitch: 1.0, rate: 1.1, lang: 'en-US', genderHint: 'male' },
   },
   {
     id: 'socrates',
@@ -77,6 +83,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#8B5CF6', // Purple Mystical
     avatarIcon: '🏛️',
     avatarImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Socrates_Louvre.jpg/440px-Socrates_Louvre.jpg',
+    voiceProfile: { pitch: 0.9, rate: 0.95, lang: 'en-GB', genderHint: 'male' },
   },
   {
     id: 'machiavelli',
@@ -88,6 +95,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#10B981', // Emerald Green
     avatarIcon: '👑',
     avatarImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Santi_di_Tito_-_Niccol%C3%B2_Machiavelli_-_Google_Art_Project.jpg/440px-Santi_di_Tito_-_Niccol%C3%B2_Machiavelli_-_Google_Art_Project.jpg',
+    voiceProfile: { pitch: 0.85, rate: 1.0, lang: 'en-US', genderHint: 'male' },
   },
   {
     id: 'hitler',
@@ -99,6 +107,7 @@ export const BUILTIN_PERSONAS: Persona[] = [
     avatarColor: '#475569', // Slate Gray
     avatarIcon: '🏛️',
     avatarImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Hitler_portrait_crop.jpg/440px-Hitler_portrait_crop.jpg',
+    voiceProfile: { pitch: 0.75, rate: 0.9, lang: 'en-US', genderHint: 'male' },
   },
 ];
 

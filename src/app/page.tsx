@@ -67,6 +67,8 @@ export default function Home() {
           setUserProfile={engine.setUserProfile}
           tokenStats={engine.tokenStats}
           lastPayload={engine.lastPayload}
+          onPlayTurnVoice={engine.playTurnVoice}
+          currentlySpeakingTurnId={engine.tts.currentlySpeakingTurnId}
         />
       </div>
 
