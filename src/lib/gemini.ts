@@ -2,8 +2,34 @@ import { GoogleGenAI } from '@google/genai';
 import { Persona, DebateTurn, UserProfile } from '@/types/debate';
 import { MinimizedPayload } from './token-minimizer';
 
+export interface AIModelOption {
+  id: string;
+  name: string;
+  provider: 'OpenRouter' | 'Google Gemini';
+  badge: string;
+  isFree?: boolean;
+}
+
+export const AVAILABLE_MODELS: AIModelOption[] = [
+  { id: 'meta-llama/llama-3.2-1b-instruct', name: 'Llama 3.2 1B (Ultra Fast)', provider: 'OpenRouter', badge: 'Ultra Fast', isFree: true },
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'OpenRouter', badge: 'High Quality', isFree: true },
+  { id: 'qwen/qwen-2.5-7b-instruct', name: 'Qwen 2.5 7B', provider: 'OpenRouter', badge: 'Balanced', isFree: true },
+  { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B', provider: 'OpenRouter', badge: 'Strong Reasoning', isFree: true },
+  { id: 'microsoft/phi-3-mini-128k-instruct', name: 'Phi-3 Mini 128k', provider: 'OpenRouter', badge: 'Compact', isFree: true },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash Native', provider: 'Google Gemini', badge: 'Native API' },
+];
+
 export function getStoredApiKey(): string {
   return process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+}
+
+export function getOpenRouterApiKey(): string {
+  return (
+    process.env.NEXT_PUBLIC_OPENROUTER_API ||
+    process.env.NEXT_PUBLIC_OPENROUTER_API_KEY ||
+    process.env.OPENROUTER_API_KEY ||
+    ''
+  );
 }
 
 export function saveStoredApiKey(_key: string): void {
@@ -69,16 +95,71 @@ function cleanModelOutput(raw: string): string {
   return text;
 }
 
+async function generateOpenRouterTurnResponse(
+  openRouterKey: string,
+  system: string,
+  prompt: string,
+  preferredModel?: string
+): Promise<string | null> {
+  const fallbackModels = [
+    'meta-llama/llama-3.2-1b-instruct',
+    'google/gemini-2.5-flash',
+    'qwen/qwen-2.5-7b-instruct',
+    'mistralai/mistral-7b-instruct',
+    'microsoft/phi-3-mini-128k-instruct',
+  ];
+
+  const modelsToTry = preferredModel && preferredModel.includes('/')
+    ? [preferredModel, ...fallbackModels.filter((m) => m !== preferredModel)]
+    : [process.env.NEXT_PUBLIC_OPENROUTER_MODEL || 'meta-llama/llama-3.2-1b-instruct', ...fallbackModels];
+
+  for (const model of modelsToTry) {
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openRouterKey.trim()}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://checko.app',
+          'X-Title': 'Checko Debate Arena',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: prompt },
+          ],
+          max_tokens: 350,
+          temperature: 0.85,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const content = data?.choices?.[0]?.message?.content;
+        if (content && typeof content === 'string' && content.trim().length > 0) {
+          return cleanModelOutput(content);
+        }
+      } else {
+        const errText = await res.text();
+        console.warn(`OpenRouter model '${model}' returned status ${res.status}:`, errText);
+      }
+    } catch (err) {
+      console.warn(`OpenRouter request error for model '${model}':`, err);
+    }
+  }
+
+  return null;
+}
+
 export async function generateDebateTurnResponse(
   persona: Persona,
   payload: MinimizedPayload,
-  userProfile?: UserProfile
+  userProfile?: UserProfile,
+  selectedModel?: string
 ): Promise<string> {
   const apiKey = getStoredApiKey();
-
-  if (!apiKey || apiKey.trim().length === 0) {
-    return `⚠️ Please set NEXT_PUBLIC_GEMINI_API_KEY in your .env file to start the conversation.`;
-  }
+  const openRouterKey = getOpenRouterApiKey();
 
   const userName = userProfile?.name || 'User';
   const lastTurn = payload.slidingWindowTurns[payload.slidingWindowTurns.length - 1];
@@ -96,6 +177,19 @@ export async function generateDebateTurnResponse(
     prompt = `${userName} said: "${lastTurn.content}"\n\nAnswer ${userName} directly from your unique perspective as ${persona.name} in 2-3 complete sentences about "${topic}". ${rules}`;
   } else {
     prompt = `${lastTurn.speakerName} argued about "${topic}": "${lastTurn.content}"\n\nRespond directly as ${persona.name}. Do NOT start your response with "I agree with ${lastTurn.speakerName}" or repeat their exact words. Challenge their point or present a NEW, distinct scientific/philosophical counter-argument on "${topic}" in 2-3 complete sentences. ${rules}`;
+  }
+
+  // 1. Primary: Try OpenRouter API with low-end lightweight models if key is provided
+  if (openRouterKey && openRouterKey.trim().length > 0) {
+    const openRouterResult = await generateOpenRouterTurnResponse(openRouterKey, system, prompt, selectedModel);
+    if (openRouterResult) {
+      return openRouterResult;
+    }
+    console.warn('OpenRouter API call failed or unfulfilled. Falling back to Gemini API...');
+  }
+
+  if (!apiKey || apiKey.trim().length === 0) {
+    return `⚠️ Please set NEXT_PUBLIC_OPENROUTER_API or NEXT_PUBLIC_GEMINI_API_KEY in your .env file to start the conversation.`;
   }
 
   try {

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { DebateMode, TokenStats, UserProfile } from '@/types/debate';
-import { getStoredApiKey } from '@/lib/gemini';
+import { getStoredApiKey, getOpenRouterApiKey } from '@/lib/gemini';
 import { Key, Sparkles, User, Settings, Zap } from 'lucide-react';
 import { SpeechControls } from './SpeechControls';
 
@@ -135,22 +135,30 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-              <Key className="w-5 h-5 text-amber-400" /> Gemini API Configuration
+              <Key className="w-5 h-5 text-amber-400" /> AI Engine & API Configuration
             </h3>
             <p className="text-xs text-slate-400 mb-4">
-              The Gemini API key is loaded exclusively from environment variables (<code className="text-rose-400 bg-slate-950 px-1 py-0.5 rounded">NEXT_PUBLIC_GEMINI_API_KEY</code> in <code className="text-rose-400 bg-slate-950 px-1 py-0.5 rounded">.env</code>). Keys are never stored in browser local storage.
+              API keys are loaded directly from environment variables (<code className="text-rose-400 bg-slate-950 px-1 py-0.5 rounded">NEXT_PUBLIC_OPENROUTER_API</code> & <code className="text-rose-400 bg-slate-950 px-1 py-0.5 rounded">NEXT_PUBLIC_GEMINI_API_KEY</code> in <code className="text-rose-400 bg-slate-950 px-1 py-0.5 rounded">.env</code>).
             </p>
-            <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs mb-4">
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs mb-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Environment Status:</span>
-                {getStoredApiKey() ? (
+                <span className="text-slate-400 font-medium">OpenRouter API (Low-End Model):</span>
+                {getOpenRouterApiKey() ? (
                   <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Key Detected (.env)
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Active (.env)
                   </span>
                 ) : (
-                  <span className="text-amber-400 font-semibold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-amber-400"></span> Key Missing
+                  <span className="text-slate-500 font-semibold">Not Set</span>
+                )}
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-slate-900">
+                <span className="text-slate-400 font-medium">Google Gemini API:</span>
+                {getStoredApiKey() ? (
+                  <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Active (.env)
                   </span>
+                ) : (
+                  <span className="text-slate-500 font-semibold">Not Set</span>
                 )}
               </div>
             </div>

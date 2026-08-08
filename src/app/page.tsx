@@ -40,9 +40,9 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0b141a] text-slate-100 flex flex-col font-sans selection:bg-[#00a884] selection:text-white p-2 sm:p-4">
+    <main className="h-screen w-screen bg-[#0b141a] text-slate-100 flex flex-col overflow-hidden font-sans selection:bg-[#00a884] selection:text-white">
       {/* WhatsApp Group Chat UI Main View */}
-      <div className="flex-1 flex items-center justify-center w-full my-auto">
+      <div className="w-full h-full flex-1 flex flex-col">
         <WhatsAppGroupChat
           topic={engine.topic}
           setTopic={engine.setTopic}
@@ -59,6 +59,7 @@ export default function Home() {
           togglePause={engine.togglePause}
           timerSeconds={engine.timerSeconds}
           turnDelay={engine.turnDelay}
+          setTurnDelay={engine.setTurnDelay}
           triggerNextTurn={engine.triggerNextTurn}
           resetDebate={engine.resetDebate}
           turns={engine.turns}
@@ -69,6 +70,11 @@ export default function Home() {
           lastPayload={engine.lastPayload}
           onPlayTurnVoice={engine.playTurnVoice}
           currentlySpeakingTurnId={engine.tts.currentlySpeakingTurnId}
+          isMuted={engine.tts.isMuted}
+          onToggleMute={engine.tts.toggleMute}
+          isSpeaking={engine.tts.isSpeaking}
+          selectedModel={engine.selectedModel}
+          onSelectModel={engine.setSelectedModel}
         />
       </div>
 

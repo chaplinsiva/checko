@@ -33,10 +33,11 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
   const [userProfile, setUserProfileState] = useState<UserProfile>(
     options.userProfile || { name: 'Alex', role: 'debater' }
   );
+  const [selectedModel, setSelectedModelState] = useState<string>('meta-llama/llama-3.2-1b-instruct');
 
   const tts = useTextToSpeech();
 
-  // Sync topic, userProfile, and active personas from localStorage on mount
+  // Sync topic, userProfile, active personas, and selected model from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -57,10 +58,26 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
           setActivePersonaIdsState(parsed);
         }
       }
+
+      const savedModel = localStorage.getItem('checko_selected_model');
+      if (savedModel) {
+        setSelectedModelState(savedModel);
+      }
     } catch (e) {
       console.error('Failed to load state from localStorage', e);
     }
   }, []);
+
+  const setSelectedModel = (modelId: string) => {
+    setSelectedModelState(modelId);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('checko_selected_model', modelId);
+      } catch (e) {
+        console.error('Failed to save selected model to localStorage', e);
+      }
+    }
+  };
 
   const setTopic = (newTopic: string) => {
     setTopicState(newTopic);
@@ -205,7 +222,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
 
         setLastPayload(payload);
 
-        const responseText = await generateDebateTurnResponse(speaker, payload, userProfile);
+        const responseText = await generateDebateTurnResponse(speaker, payload, userProfile, selectedModel);
 
         const newTurn: DebateTurn = {
           id: `turn_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
@@ -339,5 +356,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     lastPayload,
     tts,
     playTurnVoice,
+    selectedModel,
+    setSelectedModel,
   };
 }
