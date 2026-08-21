@@ -165,18 +165,18 @@ export async function generateDebateTurnResponse(
   const lastTurn = payload.slidingWindowTurns[payload.slidingWindowTurns.length - 1];
   const topic = payload.topic;
 
-  // System: who you are + STRICT topic lock & tone
-  const system = `You are ${persona.name}, ${persona.title}. ${persona.bio} Tone: ${persona.tone}. You are in a group chat debating: "${topic}". Speak directly in character as ${persona.name}. Every sentence must be about "${topic}". Write plain text only with NO markdown, NO asterisks, and NO bullet points. Always finish every sentence with a period.`;
+  // System: who you are + STRICT topic lock, tone & real data requirement
+  const system = `You are ${persona.name}, ${persona.title}. ${persona.bio} Tone: ${persona.tone}. You are in a fast-paced WhatsApp group chat debating: "${topic}". Speak directly in character as ${persona.name}. Write EXACTLY 1 TO 2 SHORT LINES ONLY (maximum 25-35 words). Ground your point in real historical facts, scientific laws, or mathematical/philosophical truth authentic to ${persona.name}. Plain text only with NO markdown, NO asterisks, and NO bullet points. Always finish every sentence with proper punctuation.`;
 
   let prompt: string;
-  const rules = `Stay strictly on "${topic}". Plain text only, no formatting or markdown. Always end every sentence with proper punctuation.`;
+  const rules = `Length constraint: exactly 1 or 2 short lines only (max 25-35 words). Use real concrete facts/data. Plain text only, no formatting.`;
 
   if (!lastTurn) {
-    prompt = `Introduce yourself briefly as ${persona.name} and share your unique, sharp perspective on "${topic}" in 2-3 complete sentences. ${rules}`;
+    prompt = `Greet ${userName} and the group briefly, then state your core perspective on "${topic}" using a real fact or principle in 1 to 2 short lines. ${rules}`;
   } else if (lastTurn.speakerId === 'user') {
-    prompt = `${userName} said: "${lastTurn.content}"\n\nAnswer ${userName} directly from your unique perspective as ${persona.name} in 2-3 complete sentences about "${topic}". ${rules}`;
+    prompt = `${userName} said: "${lastTurn.content}"\n\nAnswer ${userName} directly as ${persona.name} with real factual or philosophical insight in 1 to 2 short lines. ${rules}`;
   } else {
-    prompt = `${lastTurn.speakerName} argued about "${topic}": "${lastTurn.content}"\n\nRespond directly as ${persona.name}. Do NOT start your response with "I agree with ${lastTurn.speakerName}" or repeat their exact words. Challenge their point or present a NEW, distinct scientific/philosophical counter-argument on "${topic}" in 2-3 complete sentences. ${rules}`;
+    prompt = `${lastTurn.speakerName} argued: "${lastTurn.content}"\n\nCounter or advance the argument on "${topic}" as ${persona.name} using a specific real-world fact, scientific law, or historical lesson in 1 to 2 short lines. Do not echo their words. ${rules}`;
   }
 
   // 1. Primary: Try OpenRouter API with low-end lightweight models if key is provided

@@ -28,7 +28,7 @@ describe('TokenMinimizer Engine', () => {
     expect(sysPrompt).toContain('Charlie Chaplin');
     expect(sysPrompt).toContain('Alex');
     expect(sysPrompt).toContain('Freedom vs Order');
-    expect(sysPrompt).toContain('warm, natural, in-character greeting');
+    expect(sysPrompt).toContain('EXACTLY 1 OR 2 SHORT LINES ONLY');
   });
 
   test('prepareMinimizedPayload keeps sliding window K=4 last turns', () => {
