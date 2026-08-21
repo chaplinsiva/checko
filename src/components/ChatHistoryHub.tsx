@@ -98,8 +98,8 @@ export const ChatHistoryHub: React.FC<ChatHistoryHubProps> = ({
           <div className="h-6 w-[1px] bg-[#222d34]" />
 
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#00a884] to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              💬
+            <div className="w-8 h-8 rounded-lg overflow-hidden ring-1 ring-[#00a884]/40 flex items-center justify-center shadow-sm">
+              <img src="/logo.svg" alt="Checko Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
