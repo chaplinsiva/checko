@@ -17,18 +17,22 @@ export interface DebateEngineOptions {
   initialTopic?: string;
   initialMode?: DebateMode;
   initialPersonaIds?: string[];
+  initialGroupId?: string;
   userProfile?: UserProfile;
   turnDelaySeconds?: number;
   allPersonas?: Persona[];
 }
 
 export function useDebateEngine(options: DebateEngineOptions = {}) {
+  const [groupId, setGroupIdState] = useState<string>(
+    options.initialGroupId || 'group_1'
+  );
   const [topic, setTopicState] = useState<string>(
-    options.initialTopic || 'Humor, Freedom & Propaganda in Modern Technology'
+    options.initialTopic || 'Is backward time travel & the grandfather paradox possible?'
   );
   const [mode, setMode] = useState<DebateMode>(options.initialMode || '1v1');
   const [activePersonaIds, setActivePersonaIdsState] = useState<string[]>(
-    options.initialPersonaIds || ['chaplin', 'hitler']
+    options.initialPersonaIds || ['einstein', 'hawking', 'buddha', 'chaplin']
   );
   const [userProfile, setUserProfileState] = useState<UserProfile>(
     options.userProfile || { name: 'Alex', role: 'debater' }
@@ -37,10 +41,15 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
 
   const tts = useTextToSpeech();
 
-  // Sync topic, userProfile, active personas, and selected model from localStorage on mount
+  // Sync topic, userProfile, active personas, groupId, and selected model from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
+      const savedGroupId = localStorage.getItem('checko_active_group_id');
+      if (savedGroupId && savedGroupId.trim().length > 0) {
+        setGroupIdState(savedGroupId);
+      }
+
       const savedTopic = localStorage.getItem('checko_active_topic');
       if (savedTopic && savedTopic.trim().length > 0) {
         setTopicState(savedTopic);
@@ -67,6 +76,15 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
       console.error('Failed to load state from localStorage', e);
     }
   }, []);
+
+  const setGroupId = (newId: string) => {
+    setGroupIdState(newId);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('checko_active_group_id', newId);
+      } catch (e) {}
+    }
+  };
 
   const setSelectedModel = (modelId: string) => {
     setSelectedModelState(modelId);
@@ -119,15 +137,16 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
   const [isPaused, setIsPaused] = useState<boolean>(true); // Start paused so user can inspect stage
   const [timerSeconds, setTimerSeconds] = useState<number>(5);
 
-  // Sync chat turns from localStorage on topic change or mount
+  // Sync chat turns from localStorage when groupId or topic changes
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
+      const groupKey = `checko_group_turns_${groupId}`;
       const topicKey = `checko_turns_${topic}`;
-      const savedTurns = localStorage.getItem(topicKey) || localStorage.getItem('checko_debate_turns');
+      const savedTurns = localStorage.getItem(groupKey) || localStorage.getItem(topicKey);
       if (savedTurns) {
         const parsed = JSON.parse(savedTurns);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           setTurns(parsed);
           return;
         }
@@ -135,22 +154,59 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
       setTurns([]);
     } catch (e) {
       console.error('Failed to load turns from localStorage', e);
+      setTurns([]);
     }
-  }, [topic]);
+  }, [groupId, topic]);
 
-  // Save chat turns to localStorage on any change
+  // Save chat turns to localStorage on any turn update
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       if (turns.length > 0) {
+        const groupKey = `checko_group_turns_${groupId}`;
         const topicKey = `checko_turns_${topic}`;
+        localStorage.setItem(groupKey, JSON.stringify(turns));
         localStorage.setItem(topicKey, JSON.stringify(turns));
-        localStorage.setItem('checko_debate_turns', JSON.stringify(turns));
       }
     } catch (e) {
       console.error('Failed to save turns to localStorage', e);
     }
-  }, [turns, topic]);
+  }, [turns, groupId, topic]);
+
+  // Seamlessly switch between debate groups without wiping chat history
+  const switchGroup = useCallback(
+    (newGroupId: string, newTopic: string, newPersonaIds: string[]) => {
+      tts.stop();
+      setGroupIdState(newGroupId);
+      setTopicState(newTopic);
+      setActivePersonaIdsState(newPersonaIds);
+      setIsPaused(true);
+      setTimerSeconds(turnDelay);
+
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('checko_active_group_id', newGroupId);
+          localStorage.setItem('checko_active_topic', newTopic);
+          localStorage.setItem('checko_active_personas', JSON.stringify(newPersonaIds));
+
+          const groupKey = `checko_group_turns_${newGroupId}`;
+          const topicKey = `checko_turns_${newTopic}`;
+          const saved = localStorage.getItem(groupKey) || localStorage.getItem(topicKey);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) {
+              setTurns(parsed);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to load switched group turns:', e);
+        }
+      }
+      setTurns([]);
+    },
+    [turnDelay, tts]
+  );
 
   const [tokenStats, setTokenStats] = useState<TokenStats>({
     totalPromptTokens: 0,
@@ -313,7 +369,9 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     tts.stop();
     if (typeof window !== 'undefined') {
       try {
+        const groupKey = `checko_group_turns_${groupId}`;
         const topicKey = `checko_turns_${topic}`;
+        localStorage.removeItem(groupKey);
         localStorage.removeItem(topicKey);
         localStorage.removeItem('checko_debate_turns');
       } catch (e) {
@@ -331,6 +389,9 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
   );
 
   return {
+    groupId,
+    setGroupId,
+    switchGroup,
     topic,
     setTopic,
     mode,
@@ -341,6 +402,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     userProfile,
     setUserProfile,
     turns,
+    setTurns,
     currentSpeaker,
     currentSpeakerIndex: activeSpeakerIndex,
     isGenerating,
