@@ -66,6 +66,7 @@ interface WhatsAppGroupChatProps {
   isSpeaking?: boolean;
   selectedModel?: string;
   onSelectModel?: (modelId: string) => void;
+  onBackToHistory?: () => void;
 }
 
 export interface SavedGroupItem {
@@ -78,7 +79,7 @@ export interface SavedGroupItem {
   createdAt: number;
 }
 
-const DEFAULT_PRESET_GROUPS: SavedGroupItem[] = [
+export const DEFAULT_PRESET_GROUPS: SavedGroupItem[] = [
   {
     id: 'group_1',
     groupTitle: 'Coffee with Einstein & Stephen',
@@ -149,6 +150,7 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
   isSpeaking = false,
   selectedModel = 'meta-llama/llama-3.2-1b-instruct',
   onSelectModel,
+  onBackToHistory,
 }) => {
   const [inputText, setInputText] = useState('');
   
@@ -406,9 +408,15 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
         {/* Left Section: Drawer Toggle, Group Avatar & Editable Title */}
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           <button
-            onClick={() => setIsChatsDrawerOpen(true)}
-            className="p-2 bg-[#202c33]/80 hover:bg-[#2a3942] text-[#00a884] rounded-xl transition-all shrink-0 flex items-center gap-1 text-xs font-semibold"
-            title="Open Previous Group Chats"
+            onClick={() => {
+              if (onBackToHistory) {
+                onBackToHistory();
+              } else {
+                setIsChatsDrawerOpen(true);
+              }
+            }}
+            className="p-2 bg-[#202c33]/80 hover:bg-[#2a3942] text-[#00a884] rounded-xl transition-all shrink-0 flex items-center gap-1 text-xs font-semibold cursor-pointer"
+            title="Back to Chat History & Arenas"
           >
             <ArrowLeft className="w-4 h-4 text-[#00a884]" />
             <span className="hidden sm:inline">Chats</span>
