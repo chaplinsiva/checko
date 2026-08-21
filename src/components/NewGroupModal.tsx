@@ -9,6 +9,7 @@ interface NewGroupModalProps {
   onClose: () => void;
   allPersonas: Persona[];
   onCreateGroup: (topic: string, personaIds: string[], autoGroupName: string) => void;
+  onOpenCharacterModal?: () => void;
 }
 
 const SAMPLE_MOTIONS = [
@@ -102,6 +103,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   onClose,
   allPersonas,
   onCreateGroup,
+  onOpenCharacterModal,
 }) => {
   const [topic, setTopic] = useState('Is backward time travel & the grandfather paradox possible?');
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>([
@@ -200,9 +202,17 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold uppercase text-[#8696a0] flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-purple-400" /> Select Group Characters ({selectedPersonaIds.length} chosen):
+                <Sparkles className="w-4 h-4 text-purple-400" /> Select Characters ({selectedPersonaIds.length} chosen):
               </label>
-              <span className="text-[10px] text-[#8696a0]">Min. 2 characters required</span>
+              {onOpenCharacterModal && (
+                <button
+                  type="button"
+                  onClick={onOpenCharacterModal}
+                  className="text-[11px] px-2.5 py-1 rounded-xl bg-[#00a884]/20 hover:bg-[#00a884]/30 text-[#00a884] font-semibold border border-[#00a884]/40 transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <span>🌐 Add from Wikipedia</span>
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
