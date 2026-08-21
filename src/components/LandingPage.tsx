@@ -41,8 +41,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-40 bg-[#111b21]/90 backdrop-blur-md border-b border-[#222d34]/80 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00a884] to-teal-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#00a884]/20 ring-2 ring-[#00a884]/30">
-            ⚡
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-[#00a884]/20 ring-2 ring-[#00a884]/40 flex items-center justify-center">
+            <img src="/logo.svg" alt="Checko Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
