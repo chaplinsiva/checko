@@ -210,7 +210,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                   onClick={onOpenCharacterModal}
                   className="text-[11px] px-2.5 py-1 rounded-xl bg-[#00a884]/20 hover:bg-[#00a884]/30 text-[#00a884] font-semibold border border-[#00a884]/40 transition-colors flex items-center gap-1 cursor-pointer"
                 >
-                  <span>🌐 Add from Wikipedia</span>
+                  <span>+ Add Character</span>
                 </button>
               )}
             </div>

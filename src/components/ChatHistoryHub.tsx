@@ -119,7 +119,7 @@ export const ChatHistoryHub: React.FC<ChatHistoryHubProps> = ({
             className="px-3 py-2 text-xs font-semibold rounded-xl bg-[#202c33] hover:bg-[#2a3942] text-[#8696a0] hover:text-white border border-[#2a3942] transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Bot className="w-3.5 h-3.5 text-[#00a884]" />
-            <span className="hidden md:inline">Personas</span>
+            <span className="hidden sm:inline">Add Character</span>
           </button>
 
           <button

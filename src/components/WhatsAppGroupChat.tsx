@@ -636,6 +636,15 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
             );
           })}
 
+          {/* Quick Add Character Trigger */}
+          <button
+            onClick={onOpenCharacterModal}
+            className="px-2.5 py-1 rounded-xl text-xs font-semibold text-[#00a884] bg-[#202c33] hover:bg-[#2a3942] border border-[#00a884]/40 transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+            title="Create and add new character to arena"
+          >
+            <UserPlus className="w-3.5 h-3.5 text-[#00a884]" />
+            <span>Add Character</span>
+          </button>
         </div>
       </div>
 
@@ -1014,6 +1023,7 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
         onClose={() => setIsNewGroupModalOpen(false)}
         allPersonas={allPersonas}
         onCreateGroup={handleGroupCreatedFromModal}
+        onOpenCharacterModal={onOpenCharacterModal}
       />
 
       {/* 7. Minimalist Previous Group Chats Drawer Overlay */}
@@ -1038,11 +1048,11 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
                   onOpenCharacterModal();
                   setIsChatsDrawerOpen(false);
                 }}
-                className="px-3 py-1.5 bg-[#202c33] hover:bg-[#2a3942] text-[#00a884] border border-[#00a884]/40 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1"
-                title="Create Custom Persona Character"
+                className="px-3 py-1.5 bg-[#202c33] hover:bg-[#2a3942] text-[#00a884] border border-[#00a884]/40 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                title="Create Custom Character"
               >
                 <UserPlus className="w-3.5 h-3.5 text-[#00a884]" />
-                <span>+ Character</span>
+                <span>Add Character</span>
               </button>
               <button
                 onClick={handleCreateNewChat}

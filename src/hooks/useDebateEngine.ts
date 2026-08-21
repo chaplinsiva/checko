@@ -289,7 +289,18 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
           phase: stateSummary.currentPhase,
         };
 
-        setTurns((prev) => [...prev, newTurn]);
+        const updatedTurns = [...currentTurns, newTurn];
+        setTurns(updatedTurns);
+
+        // Immediate persistent write to localStorage for the active group
+        if (typeof window !== 'undefined') {
+          try {
+            const groupKey = `checko_group_turns_${groupId}`;
+            const topicKey = `checko_turns_${topic}`;
+            localStorage.setItem(groupKey, JSON.stringify(updatedTurns));
+            localStorage.setItem(topicKey, JSON.stringify(updatedTurns));
+          } catch (e) {}
+        }
 
         // Auto-trigger Text-To-Speech voice narration for new turn
         tts.speak(responseText, speaker, newTurn.id);
@@ -308,14 +319,14 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
         setTimerSeconds(turnDelay);
       }
     },
-    [isGenerating, activePersonas, turns, topic, stateSummary, userProfile, turnDelay, tts]
+    [isGenerating, activePersonas, turns, topic, stateSummary, userProfile, turnDelay, tts, groupId, selectedModel]
   );
 
   const triggerNextTurn = useCallback(() => {
     executeTurnForSpeaker();
   }, [executeTurnForSpeaker]);
 
-  // Paced 15s timer countdown effect
+  // Paced timer countdown effect
   useEffect(() => {
     if (isPaused || isGenerating) return;
 
@@ -339,7 +350,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     }
   }, [timerSeconds, isPaused, isGenerating, triggerNextTurn, turnDelay]);
 
-  // User Interjection Handler ("Steal Mic")
+  // User Interjection Handler ("Steal Mic") — 100% locally persisted with chat history
   const submitUserInterjection = (userText: string) => {
     const userTurn: DebateTurn = {
       id: `user_turn_${Date.now()}`,
@@ -355,6 +366,18 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     setTurns(newTurnsList);
     setIsPaused(false); // Resume auto debate
     setTimerSeconds(turnDelay);
+
+    // Save directly to localStorage immediately
+    if (typeof window !== 'undefined') {
+      try {
+        const groupKey = `checko_group_turns_${groupId}`;
+        const topicKey = `checko_turns_${topic}`;
+        localStorage.setItem(groupKey, JSON.stringify(newTurnsList));
+        localStorage.setItem(topicKey, JSON.stringify(newTurnsList));
+      } catch (e) {
+        console.error('Failed to save user turn to localStorage', e);
+      }
+    }
 
     // Execute response turn immediately with the updated turns array
     executeTurnForSpeaker(newTurnsList);
