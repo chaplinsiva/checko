@@ -228,6 +228,7 @@ export default function Home() {
         onClose={() => setIsNewGroupModalOpen(false)}
         allPersonas={allPersonas}
         onCreateGroup={handleGroupCreatedFromModal}
+        onOpenCharacterModal={() => setIsCharacterModalOpen(true)}
       />
     </main>
   );

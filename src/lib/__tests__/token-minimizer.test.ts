@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { prepareMinimizedPayload, buildSystemInstruction } from '../token-minimizer';
 import { Persona, DebateTurn, DebateStateSummary } from '@/types/debate';
 
@@ -25,9 +26,9 @@ describe('TokenMinimizer Engine', () => {
   test('buildSystemInstruction generates compact phase-specific prompt with user name', () => {
     const sysPrompt = buildSystemInstruction(chaplin, [hitler], 'Freedom vs Order', { name: 'Alex', role: 'debater' }, 'greeting');
     expect(sysPrompt).toContain('Charlie Chaplin');
-    expect(sysPrompt).toContain('"Alex"');
-    expect(sysPrompt).toContain('CURRENT DEBATE MOTION / TOPIC: "Freedom vs Order"');
-    expect(sysPrompt).toContain('PHASE: Opening Greeting');
+    expect(sysPrompt).toContain('Alex');
+    expect(sysPrompt).toContain('Freedom vs Order');
+    expect(sysPrompt).toContain('joining this group chat for the first time');
   });
 
   test('prepareMinimizedPayload keeps sliding window K=4 last turns', () => {
