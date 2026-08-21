@@ -67,6 +67,8 @@ interface WhatsAppGroupChatProps {
   selectedModel?: string;
   onSelectModel?: (modelId: string) => void;
   onBackToHistory?: () => void;
+  onSwitchGroup?: (group: SavedGroupItem) => void;
+  onGroupCreated?: (topic: string, personaIds: string[], autoGroupName: string) => void;
 }
 
 export interface SavedGroupItem {
@@ -151,6 +153,8 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
   selectedModel = 'meta-llama/llama-3.2-1b-instruct',
   onSelectModel,
   onBackToHistory,
+  onSwitchGroup,
+  onGroupCreated,
 }) => {
   const [inputText, setInputText] = useState('');
   
@@ -338,7 +342,13 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
     personaIds: string[],
     autoGroupName: string
   ) => {
-    resetDebate();
+    if (onGroupCreated) {
+      onGroupCreated(newMotion, personaIds, autoGroupName);
+      setIsEditingHeaderDetails(false);
+      setIsChatsDrawerOpen(false);
+      return;
+    }
+
     onSelectPersonas(personaIds);
     setGroupTitle(autoGroupName);
     setTopic(newMotion);
@@ -369,7 +379,12 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
   };
 
   const handleSelectGroup = (g: SavedGroupItem) => {
-    resetDebate();
+    if (onSwitchGroup) {
+      onSwitchGroup(g);
+      setIsChatsDrawerOpen(false);
+      return;
+    }
+
     setGroupTitle(g.groupTitle);
     setTopic(g.debateMotion);
     onSelectPersonas(g.personaIds);

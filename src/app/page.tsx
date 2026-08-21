@@ -70,14 +70,13 @@ export default function Home() {
   };
 
   const handleSelectGroup = (g: SavedGroupItem) => {
-    engine.resetDebate();
     setActiveGroupTitle(g.groupTitle);
-    engine.setTopic(g.debateMotion);
-    engine.setActivePersonaIds(g.personaIds);
+    engine.switchGroup(g.id, g.debateMotion, g.personaIds);
 
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('checko_active_group_title', g.groupTitle);
+        localStorage.setItem('checko_active_group_id', g.id);
       } catch (e) {}
     }
 
@@ -89,13 +88,12 @@ export default function Home() {
     personaIds: string[],
     autoGroupName: string
   ) => {
-    engine.resetDebate();
-    engine.setActivePersonaIds(personaIds);
+    const newGroupId = `group_${Date.now()}`;
     setActiveGroupTitle(autoGroupName);
-    engine.setTopic(newMotion);
+    engine.switchGroup(newGroupId, newMotion, personaIds);
 
     const newGroupItem: SavedGroupItem = {
-      id: `group_${Date.now()}`,
+      id: newGroupId,
       groupTitle: autoGroupName,
       debateMotion: newMotion,
       personaIds,
@@ -110,6 +108,7 @@ export default function Home() {
         try {
           localStorage.setItem('checko_saved_groups', JSON.stringify(updated));
           localStorage.setItem('checko_active_group_title', autoGroupName);
+          localStorage.setItem('checko_active_group_id', newGroupId);
         } catch (e) {}
       }
       return updated;
@@ -211,6 +210,8 @@ export default function Home() {
             selectedModel={engine.selectedModel}
             onSelectModel={engine.setSelectedModel}
             onBackToHistory={() => setCurrentView('history')}
+            onSwitchGroup={handleSelectGroup}
+            onGroupCreated={handleGroupCreatedFromModal}
           />
         </div>
       )}

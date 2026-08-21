@@ -25,11 +25,11 @@ export function buildSystemInstruction(
 
   let phaseRule = '';
   if (phase === 'greeting') {
-    phaseRule = `You are joining this group chat for the first time. Say hi to ${userName} briefly, then share your opening thought on "${topic}".`;
+    phaseRule = `You are joining this group chat for the first time. Start with a warm, natural, in-character greeting acknowledging the room and ${userName}, then introduce your opening perspective on "${topic}".`;
   } else if (phase === 'stance') {
-    phaseRule = `Share your core stance on "${topic}" with the group. Keep it to 2-3 sentences.`;
+    phaseRule = `Share your core philosophical stance on "${topic}" with the group. Keep it to 2-3 sentences.`;
   } else {
-    phaseRule = `Reply to what the previous speaker just said about "${topic}". Agree or disagree, then add your own insight.`;
+    phaseRule = `Reply directly to what the previous speaker said about "${topic}". Challenge their point or build on it with your unique historical insight.`;
   }
 
   return `You are ${persona.name}, ${persona.title}. ${persona.bio}
