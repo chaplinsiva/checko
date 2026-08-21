@@ -61,7 +61,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-[#202c33] hover:bg-[#2a3942] text-[#8696a0] hover:text-white border border-[#2a3942] transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Bot className="w-3.5 h-3.5 text-[#00a884]" />
-            <span className="hidden sm:inline">Custom Personas</span>
+            <span className="hidden sm:inline">Add Character</span>
           </button>
 
           <button
@@ -267,9 +267,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
 
-        {/* Persona Spotlight Preview */}
+        {/* Character Spotlight Preview */}
         <div className="mt-16 w-full text-center">
-          <h3 className="text-xl font-bold text-white mb-4">Available Personas Ready to Debate</h3>
+          <h3 className="text-xl font-bold text-white mb-4">Available Characters Ready to Debate</h3>
           <div className="flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto">
             {allPersonas.map((persona) => (
               <div
