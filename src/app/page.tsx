@@ -146,6 +146,36 @@ export default function Home() {
     }
   };
 
+  const handleStartSampleDebate = (sample: import('@/lib/sample-debates').SampleDebate) => {
+    const newGroupId = `group_${sample.id}_${Date.now()}`;
+    setActiveGroupTitle(sample.title);
+    engine.switchGroup(newGroupId, sample.motion, sample.personaIds);
+
+    const newGroupItem: SavedGroupItem = {
+      id: newGroupId,
+      groupTitle: sample.title,
+      debateMotion: sample.motion,
+      personaIds: sample.personaIds,
+      lastMessage: sample.previewQuotes[0]?.quote || `Debate started: ${sample.motion}`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      createdAt: Date.now(),
+    };
+
+    setSavedGroups((prev) => {
+      const updated = [newGroupItem, ...prev.filter((g) => g.groupTitle !== sample.title)];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('checko_saved_groups', JSON.stringify(updated));
+          localStorage.setItem('checko_active_group_title', sample.title);
+          localStorage.setItem('checko_active_group_id', newGroupId);
+        } catch (e) {}
+      }
+      return updated;
+    });
+
+    setCurrentView('chat');
+  };
+
   return (
     <main className="h-screen w-screen bg-[#0b141a] text-slate-100 flex flex-col overflow-hidden font-sans selection:bg-[#00a884] selection:text-white">
       {/* 1. Landing Page View */}
@@ -154,8 +184,11 @@ export default function Home() {
           onEnterChatHub={() => setCurrentView('history')}
           onCreateNewChat={() => setIsNewGroupModalOpen(true)}
           onOpenCharacterModal={() => setIsCharacterModalOpen(true)}
+          onStartSampleDebate={handleStartSampleDebate}
           allPersonas={allPersonas}
           savedGroupsCount={savedGroups.length}
+          language={engine.language}
+          onToggleLanguage={engine.setLanguage}
         />
       )}
 
@@ -171,6 +204,8 @@ export default function Home() {
           onRenameGroup={handleRenameGroup}
           onBackToLanding={() => setCurrentView('landing')}
           onOpenCharacterModal={() => setIsCharacterModalOpen(true)}
+          language={engine.language}
+          onToggleLanguage={engine.setLanguage}
         />
       )}
 
@@ -209,6 +244,8 @@ export default function Home() {
             isSpeaking={engine.tts.isSpeaking}
             selectedModel={engine.selectedModel}
             onSelectModel={engine.setSelectedModel}
+            language={engine.language}
+            onToggleLanguage={engine.setLanguage}
             onBackToHistory={() => setCurrentView('history')}
             onSwitchGroup={handleSelectGroup}
             onGroupCreated={handleGroupCreatedFromModal}

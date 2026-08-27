@@ -37,11 +37,12 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
   const [userProfile, setUserProfileState] = useState<UserProfile>(
     options.userProfile || { name: 'Alex', role: 'debater' }
   );
+  const [language, setLanguageState] = useState<'en' | 'ta'>('en');
   const [selectedModel, setSelectedModelState] = useState<string>('meta-llama/llama-3.2-1b-instruct');
 
   const tts = useTextToSpeech();
 
-  // Sync topic, userProfile, active personas, groupId, and selected model from localStorage on mount
+  // Sync topic, userProfile, active personas, groupId, language, and selected model from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -72,10 +73,26 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
       if (savedModel) {
         setSelectedModelState(savedModel);
       }
+
+      const savedLanguage = localStorage.getItem('checko_language');
+      if (savedLanguage === 'ta' || savedLanguage === 'en') {
+        setLanguageState(savedLanguage);
+      }
     } catch (e) {
       console.error('Failed to load state from localStorage', e);
     }
   }, []);
+
+  const setLanguage = (newLang: 'en' | 'ta') => {
+    setLanguageState(newLang);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('checko_language', newLang);
+      } catch (e) {
+        console.error('Failed to save language to localStorage', e);
+      }
+    }
+  };
 
   const setGroupId = (newId: string) => {
     setGroupIdState(newId);
@@ -125,7 +142,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
       try {
         localStorage.setItem('checko_user_profile', JSON.stringify(profile));
       } catch (e) {
-        console.error('Failed to save userProfile to localStorage', e);
+        console.error('Failed to save user profile to localStorage', e);
       }
     }
   };
@@ -173,27 +190,27 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     }
   }, [turns, groupId, topic]);
 
-  // Seamlessly switch between debate groups without wiping chat history
+  // Switch to a new/saved group preserving its individual turn history
   const switchGroup = useCallback(
-    (newGroupId: string, newTopic: string, newPersonaIds: string[]) => {
-      tts.stop();
+    (newGroupId: string, newTopic?: string, newPersonaIds?: string[]) => {
       setGroupIdState(newGroupId);
-      setTopicState(newTopic);
-      setActivePersonaIdsState(newPersonaIds);
+      if (newTopic) setTopicState(newTopic);
+      if (newPersonaIds && newPersonaIds.length > 0) setActivePersonaIdsState(newPersonaIds);
+
       setIsPaused(true);
       setTimerSeconds(turnDelay);
+      tts.stop();
 
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('checko_active_group_id', newGroupId);
-          localStorage.setItem('checko_active_topic', newTopic);
-          localStorage.setItem('checko_active_personas', JSON.stringify(newPersonaIds));
+          if (newTopic) localStorage.setItem('checko_active_topic', newTopic);
+          if (newPersonaIds) localStorage.setItem('checko_active_personas', JSON.stringify(newPersonaIds));
 
           const groupKey = `checko_group_turns_${newGroupId}`;
-          const topicKey = `checko_turns_${newTopic}`;
-          const saved = localStorage.getItem(groupKey) || localStorage.getItem(topicKey);
-          if (saved) {
-            const parsed = JSON.parse(saved);
+          const savedTurns = localStorage.getItem(groupKey);
+          if (savedTurns) {
+            const parsed = JSON.parse(savedTurns);
             if (Array.isArray(parsed)) {
               setTurns(parsed);
               return;
@@ -273,7 +290,8 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
           topic,
           currentTurns,
           stateSummary,
-          userProfile
+          userProfile,
+          language
         );
 
         setLastPayload(payload);
@@ -303,7 +321,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
         }
 
         // Auto-trigger Text-To-Speech voice narration for new turn
-        tts.speak(responseText, speaker, newTurn.id);
+        tts.speak(responseText, speaker, newTurn.id, language);
 
         // Update token stats
         const outputTokens = Math.ceil(responseText.length / 4);
@@ -319,7 +337,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
         setTimerSeconds(turnDelay);
       }
     },
-    [isGenerating, activePersonas, turns, topic, stateSummary, userProfile, turnDelay, tts, groupId, selectedModel]
+    [isGenerating, activePersonas, turns, topic, stateSummary, userProfile, turnDelay, tts, groupId, selectedModel, language]
   );
 
   const triggerNextTurn = useCallback(() => {
@@ -406,9 +424,9 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
   const playTurnVoice = useCallback(
     (turn: DebateTurn) => {
       const speaker = availablePersonas.find((p) => p.id === turn.speakerId);
-      tts.speak(turn.content, speaker, turn.id);
+      tts.speak(turn.content, speaker, turn.id, language);
     },
-    [availablePersonas, tts]
+    [availablePersonas, tts, language]
   );
 
   return {
@@ -443,5 +461,7 @@ export function useDebateEngine(options: DebateEngineOptions = {}) {
     playTurnVoice,
     selectedModel,
     setSelectedModel,
+    language,
+    setLanguage,
   };
 }

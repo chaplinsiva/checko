@@ -76,8 +76,15 @@ function cleanModelOutput(raw: string): string {
   // Strip quotes wrapping entire response
   text = text.replace(/^[""]([\s\S]*)[""]$/, '$1').trim();
 
-  // Strip repetitive intro headers if present (e.g. "I agree with...", "I completely agree...")
+  // Strip repetitive affirmative prefixes (e.g. "ஆம்,", "ஆமாம்,", "Yes,", "Yeah,")
+  text = text.replace(/^(ஆம்|ஆமாம்|சரி)\s*[,.:\-–—]?\s*/iu, '');
+  text = text.replace(/^(yes|yeah|sure|indeed|absolutely)\s*[,.:\-–—]?\s*/i, '');
   text = text.replace(/^I (completely )?agree (with [^,.!?]+ )?that /i, '');
+
+  // Capitalize first character if lowercase after stripping
+  if (text.length > 0) {
+    text = text.charAt(0).toUpperCase() + text.slice(1);
+  }
 
   // Ensure text ends with proper sentence completion punctuation
   if (text.length > 0 && !/[.?!"]$/.test(text)) {
@@ -164,19 +171,35 @@ export async function generateDebateTurnResponse(
   const userName = userProfile?.name || 'User';
   const lastTurn = payload.slidingWindowTurns[payload.slidingWindowTurns.length - 1];
   const topic = payload.topic;
+  const isTamil = payload.language === 'ta';
 
-  // System: who you are + STRICT topic lock, tone & real data requirement
-  const system = `You are ${persona.name}, ${persona.title}. ${persona.bio} Tone: ${persona.tone}. You are in a fast-paced WhatsApp group chat debating: "${topic}". Speak directly in character as ${persona.name}. Write EXACTLY 1 TO 2 SHORT LINES ONLY (maximum 25-35 words). Ground your point in real historical facts, scientific laws, or mathematical/philosophical truth authentic to ${persona.name}. Plain text only with NO markdown, NO asterisks, and NO bullet points. Always finish every sentence with proper punctuation.`;
+  // Use the pre-compiled system instruction from token-minimizer
+  const system = payload.systemInstruction;
+
+  // Format conversation history of recent turns (Speaker vs Opponent)
+  const conversationThread = payload.slidingWindowTurns
+    .map((t) => `${t.speakerName}: "${t.content}"`)
+    .join('\n');
 
   let prompt: string;
-  const rules = `Length constraint: exactly 1 or 2 short lines only (max 25-35 words). Use real concrete facts/data. Plain text only, no formatting.`;
-
-  if (!lastTurn) {
-    prompt = `Greet ${userName} and the group briefly, then state your core perspective on "${topic}" using a real fact or principle in 1 to 2 short lines. ${rules}`;
-  } else if (lastTurn.speakerId === 'user') {
-    prompt = `${userName} said: "${lastTurn.content}"\n\nAnswer ${userName} directly as ${persona.name} with real factual or philosophical insight in 1 to 2 short lines. ${rules}`;
+  if (isTamil) {
+    const rulesTa = `நீளம்: சரியாக 1 அல்லது 2 வரிகள் மட்டுமே (20-35 சொற்கள்). எளிய உரை (plain text), தமிழ் எழுத்துக்கள் மட்டுமே. எக்காரணம் கொண்டும் "ஆம்/ஆமாம்/சரி" என்று தொடங்காதீர்கள். நபரின் பெயரை திரும்பத் திரும்ப அழைக்காதீர்கள்.`;
+    if (!lastTurn) {
+      prompt = `குழுவினருக்கு ஒரு வரியில் சுருக்கமான தொடக்க வணக்கம் கூறி, "${topic}" பற்றிய உங்கள் தொடக்க பார்வையை அறிவியல்/வரலாற்று உண்மையுடன் 1 வரியில் கூறுங்கள். ${rulesTa}`;
+    } else if (lastTurn.speakerId === 'user') {
+      prompt = `சமீபத்திய உரையாடல்:\n${conversationThread}\n\n${userName} கூறினார்: "${lastTurn.content}"\n\n${userName}-க்கு ${persona.name}-ஆக நேரடியாக பதிலளித்து "${topic}" பற்றி புதிய கோணத்தில் வாதத்தை 1-2 வரிகளில் கூறுங்கள். ${rulesTa}`;
+    } else {
+      prompt = `சமீபத்திய உரையாடல் ஓட்டம்:\n${conversationThread}\n\nவழிகாட்டுதல் (${persona.name}-க்கு):\nமுந்தைய உரையாடலின் தொடர்ச்சியாக (continuity), ஒரே கருத்தை திரும்பத் திரும்ப பேசாமல் (no repetition loops), விவாதத்தை அடுத்த புதிய அறிவியல்/வரலாற்று அல்லது தத்துவ பகுதிக்கு கொண்டு செல்லுங்கள் (topic evolution). "${topic}" குறித்த உங்கள் நிலைப்பாட்டை ("${persona.defaultStance}") புதிய உண்மையுடன் 1-2 வரிகளில் பேசுங்கள். ${rulesTa}`;
+    }
   } else {
-    prompt = `${lastTurn.speakerName} argued: "${lastTurn.content}"\n\nCounter or advance the argument on "${topic}" as ${persona.name} using a specific real-world fact, scientific law, or historical lesson in 1 to 2 short lines. Do not echo their words. ${rules}`;
+    const rulesEn = `Length constraint: exactly 1 or 2 short lines only (max 20-35 words). Live call chat tone. Plain text only. NEVER start with "Yes", "Yeah", "I agree", or robotic name prefixes.`;
+    if (!lastTurn) {
+      prompt = `Greet the group briefly with a natural opening, then state your core perspective on "${topic}" using a real fact in 1-2 short lines. ${rulesEn}`;
+    } else if (lastTurn.speakerId === 'user') {
+      prompt = `Recent thread:\n${conversationThread}\n\n${userName} said: "${lastTurn.content}"\n\nAnswer ${userName} directly as ${persona.name} with real factual or philosophical insight advancing "${topic}" in 1-2 short lines. ${rulesEn}`;
+    } else {
+      prompt = `[Recent Conversation Thread]:\n${conversationThread}\n\nInstructions for ${persona.name}:\n- CONTINUITY & TOPIC EVOLUTION: Advance the discussion into a fresh sub-aspect or deeper scientific/philosophical dimension of "${topic}". DO NOT repeat or loop over what was already said in recent turns. Build upon the thread and present a fresh argument or thought-provoking point.\n- Stance: Firmly maintain "${persona.defaultStance}".\n- ${rulesEn}`;
+    }
   }
 
   // 1. Primary: Try OpenRouter API with low-end lightweight models if key is provided

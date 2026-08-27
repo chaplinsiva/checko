@@ -74,10 +74,19 @@ export function useTextToSpeech(options: UseTextToSpeechOptions = {}) {
     }
   }, []);
 
-  // Voice Selection Helper based on persona voice profile & browser voices
+  // Voice Selection Helper based on persona voice profile, language & browser voices
   const findBestVoice = useCallback(
-    (persona?: Persona): SpeechSynthesisVoice | null => {
+    (persona?: Persona, language?: 'en' | 'ta'): SpeechSynthesisVoice | null => {
       if (!voices.length) return null;
+
+      // If Tamil language requested, prioritize Tamil voices
+      if (language === 'ta') {
+        const tamilVoice = voices.find(
+          (v) => v.lang.toLowerCase().includes('ta') || v.lang.toLowerCase().includes('tamil')
+        );
+        if (tamilVoice) return tamilVoice;
+      }
+
       const vp = persona?.voiceProfile;
       if (!vp) return voices[0] || null;
 
@@ -114,7 +123,7 @@ export function useTextToSpeech(options: UseTextToSpeechOptions = {}) {
   };
 
   const speak = useCallback(
-    (text: string, persona?: Persona, turnId?: string) => {
+    (text: string, persona?: Persona, turnId?: string, language: 'en' | 'ta' = 'en') => {
       if (isMuted || !isSupported || !synthRef.current) return;
 
       const cleanedText = cleanSpeechText(text);
@@ -124,10 +133,13 @@ export function useTextToSpeech(options: UseTextToSpeechOptions = {}) {
       synthRef.current.cancel();
 
       const utterance = new SpeechSynthesisUtterance(cleanedText);
-      const voice = findBestVoice(persona);
+      const voice = findBestVoice(persona, language);
 
       if (voice) {
         utterance.voice = voice;
+      }
+      if (language === 'ta') {
+        utterance.lang = 'ta-IN';
       }
 
       if (persona?.voiceProfile) {

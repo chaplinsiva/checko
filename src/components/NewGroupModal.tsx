@@ -13,16 +13,65 @@ interface NewGroupModalProps {
 }
 
 const SAMPLE_MOTIONS = [
+  'Commercial Grid Capitalism vs Free Wireless Energy for Humanity',
+  'The Middle Way vs Absolute Non-Violence (Ahimsa) & Anekantavada: The True Path to Enlightenment',
+  'Open Source Unix Freedom & Developer Sovereignty vs Proprietary Desktop Ecosystems',
+  'Closed End-to-End Intuitive Elegance vs Standardized Mass Platform Accessibility',
+  'Is the Universe Strictly Deterministic or Fundamentally Probabilistic?',
   'Is backward time travel & the grandfather paradox possible?',
-  'Is Artificial Intelligence a Threat to Human Dignity?',
   'Humor, Freedom & Propaganda in Modern Technology',
-  'Commercial Grid Capitalism vs Free Energy for All',
   'The Ethics of Power & Realpolitik in Global Diplomacy',
 ];
 
 export function generateCreativeGroupName(topic: string, selectedPersonas: Persona[]): string {
   const lowerTopic = topic.toLowerCase();
   const names = selectedPersonas.map((p) => p.name.split(' ')[0] || p.name);
+
+  // OS / Linux / Windows / Computing
+  if (
+    lowerTopic.includes('linux') ||
+    lowerTopic.includes('windows') ||
+    lowerTopic.includes('open source') ||
+    lowerTopic.includes('kernel') ||
+    lowerTopic.includes('operating system')
+  ) {
+    if (names.includes('Linus') && names.includes('Bill')) {
+      return 'Windows vs Linux: The OS Battlefield';
+    }
+    if (names.includes('Linus')) {
+      return 'Kernel Hackers & Open Source Guild';
+    }
+    return 'The Operating System Wars';
+  }
+
+  // Apple / Design / Ecosystem
+  if (
+    lowerTopic.includes('apple') ||
+    lowerTopic.includes('steve') ||
+    lowerTopic.includes('mac') ||
+    lowerTopic.includes('elegance') ||
+    lowerTopic.includes('closed')
+  ) {
+    if (names.includes('Steve') && names.includes('Bill')) {
+      return 'Apple vs Microsoft: Silicon Rivals';
+    }
+    return 'Design, Elegance & Silicon Innovation';
+  }
+
+  // Buddhism / Jainism / Spiritual
+  if (
+    lowerTopic.includes('buddhism') ||
+    lowerTopic.includes('jainism') ||
+    lowerTopic.includes('ahimsa') ||
+    lowerTopic.includes('middle way') ||
+    lowerTopic.includes('enlightenment') ||
+    lowerTopic.includes('liberation')
+  ) {
+    if (names.some((n) => n.includes('Buddha') || n.includes('Siddhartha')) && names.some((n) => n.includes('Mahavira'))) {
+      return 'Buddhism vs Jainism: Paths to Liberation';
+    }
+    return 'Ancient Wisdom & Dharma Council';
+  }
 
   // Time Travel / Grandfather Paradox Topics
   if (
@@ -33,7 +82,7 @@ export function generateCreativeGroupName(topic: string, selectedPersonas: Perso
     lowerTopic.includes('wormhole')
   ) {
     if (names.includes('Albert') && names.includes('Stephen')) {
-      return 'Coffee with Einstein & Stephen';
+      return 'Relativity vs Quantum: Spacetime Arena';
     }
     if (names.includes('Albert')) {
       return 'Coffee with Einstein & Time Travellers';
@@ -63,10 +112,12 @@ export function generateCreativeGroupName(topic: string, selectedPersonas: Perso
     lowerTopic.includes('energy') ||
     lowerTopic.includes('grid') ||
     lowerTopic.includes('electricity') ||
-    lowerTopic.includes('capitalism')
+    lowerTopic.includes('capitalism') ||
+    lowerTopic.includes('tesla') ||
+    lowerTopic.includes('edison')
   ) {
     if (names.includes('Nikola') && names.includes('Thomas')) {
-      return 'AC vs DC: Voltage & Power Vault';
+      return 'AC vs DC: War of the Currents';
     }
     if (names.includes('Nikola')) {
       return 'Coffee with Tesla & Electrical Visionaries';
@@ -83,7 +134,7 @@ export function generateCreativeGroupName(topic: string, selectedPersonas: Perso
     lowerTopic.includes('socrates')
   ) {
     if (names.includes('Niccolò') && names.includes('Socrates')) {
-      return 'Philosophers & Realpolitik Strategists';
+      return 'Virtue vs Realpolitik: Philosophy of Power';
     }
     return 'Ethics, Power & Wisdom Council';
   }
@@ -92,7 +143,7 @@ export function generateCreativeGroupName(topic: string, selectedPersonas: Perso
   if (selectedPersonas.length >= 2) {
     const firstName = selectedPersonas[0]?.name.split(' ')[0] || 'Thinker';
     const secondName = selectedPersonas[1]?.name.split(' ')[0] || 'Visionary';
-    return `Coffee with ${firstName} & ${secondName}`;
+    return `Clash of ${firstName} & ${secondName}`;
   }
 
   return `The Arena Debate Salon`;

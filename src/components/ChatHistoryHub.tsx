@@ -31,6 +31,8 @@ interface ChatHistoryHubProps {
   onRenameGroup: (groupId: string, newTitle: string) => void;
   onBackToLanding: () => void;
   onOpenCharacterModal: () => void;
+  language?: 'en' | 'ta';
+  onToggleLanguage?: (lang: 'en' | 'ta') => void;
 }
 
 export const ChatHistoryHub: React.FC<ChatHistoryHubProps> = ({
@@ -43,6 +45,8 @@ export const ChatHistoryHub: React.FC<ChatHistoryHubProps> = ({
   onRenameGroup,
   onBackToLanding,
   onOpenCharacterModal,
+  language = 'en',
+  onToggleLanguage,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
@@ -114,6 +118,20 @@ export const ChatHistoryHub: React.FC<ChatHistoryHubProps> = ({
         </div>
 
         <div className="flex items-center space-x-2.5">
+          {onToggleLanguage && (
+            <button
+              onClick={() => onToggleLanguage(language === 'ta' ? 'en' : 'ta')}
+              className={`px-3 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
+                language === 'ta'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30'
+                  : 'bg-[#202c33] hover:bg-[#2a3942] text-[#8696a0] hover:text-white border-[#2a3942]'
+              }`}
+              title={language === 'ta' ? 'Current: தமிழ். Click for English' : 'Current: English. Click for தமிழ்'}
+            >
+              <span>{language === 'ta' ? '🇮🇳 தமிழ்' : '🇬🇧 English'}</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenCharacterModal}
             className="px-3 py-2 text-xs font-semibold rounded-xl bg-[#202c33] hover:bg-[#2a3942] text-[#8696a0] hover:text-white border border-[#2a3942] transition-all flex items-center gap-1.5 cursor-pointer"
