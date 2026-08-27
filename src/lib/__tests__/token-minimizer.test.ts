@@ -23,15 +23,45 @@ describe('TokenMinimizer Engine', () => {
     avatarColor: '#475569',
   };
 
-  test('buildSystemInstruction generates compact phase-specific prompt with user name', () => {
-    const sysPrompt = buildSystemInstruction(chaplin, [hitler], 'Freedom vs Order', { name: 'Alex', role: 'debater' }, 'greeting');
+  test('buildSystemInstruction generates compact phase-specific prompt with natural chat banter', () => {
+    const sysPrompt = buildSystemInstruction(chaplin, [hitler], 'Freedom vs Order', { name: 'Alex', role: 'debater' }, 'greeting', 'en');
     expect(sysPrompt).toContain('Charlie Chaplin');
-    expect(sysPrompt).toContain('Alex');
     expect(sysPrompt).toContain('Freedom vs Order');
     expect(sysPrompt).toContain('EXACTLY 1 OR 2 SHORT LINES ONLY');
+    expect(sysPrompt).toContain('Laughter defeats totalism');
+    expect(sysPrompt).toContain('Live Call Flow (No Robotic Formulas)');
   });
 
-  test('prepareMinimizedPayload keeps sliding window K=4 last turns', () => {
+  test('buildSystemInstruction generates Tamil prompt when language is "ta"', () => {
+    const sysPrompt = buildSystemInstruction(chaplin, [hitler], 'Freedom vs Order', { name: 'Alex', role: 'debater' }, 'greeting', 'ta');
+    expect(sysPrompt).toContain('LANGUAGE: TAMIL');
+    expect(sysPrompt).toContain('தமிழ்');
+    expect(sysPrompt).toContain('Charlie Chaplin');
+    expect(sysPrompt).toContain('Laughter defeats totalism');
+  });
+
+  test('prepareMinimizedPayload propagates language setting to systemInstruction', () => {
+    const stateSummary: DebateStateSummary = {
+      topic: 'Freedom vs Order',
+      currentPhase: 'debate',
+      personaStances: { 'Charlie Chaplin': 'Freedom', 'Adolf Hitler': 'Order' },
+      latestConflict: 'Stance declaration',
+      turnCount: 2,
+    };
+    const payload = prepareMinimizedPayload(
+      chaplin,
+      [chaplin, hitler],
+      'Freedom vs Order',
+      [],
+      stateSummary,
+      { name: 'Alex', role: 'debater' },
+      'ta'
+    );
+    expect(payload.systemInstruction).toContain('LANGUAGE: TAMIL');
+    expect(payload.language).toBe('ta');
+  });
+
+  test('prepareMinimizedPayload keeps sliding window K=8 last turns for dialogue continuity', () => {
     const turns: DebateTurn[] = [
       { id: '1', speakerId: 'chaplin', speakerName: 'Charlie Chaplin', content: 'Greeting 1', timestamp: 1, phase: 'greeting' },
       { id: '2', speakerId: 'hitler', speakerName: 'Adolf Hitler', content: 'Greeting 2', timestamp: 2, phase: 'greeting' },
@@ -39,6 +69,10 @@ describe('TokenMinimizer Engine', () => {
       { id: '4', speakerId: 'hitler', speakerName: 'Adolf Hitler', content: 'State order is essential.', timestamp: 4, phase: 'stance' },
       { id: '5', speakerId: 'chaplin', speakerName: 'Charlie Chaplin', content: 'Laughter breaks control.', timestamp: 5, phase: 'debate' },
       { id: '6', speakerId: 'hitler', speakerName: 'Adolf Hitler', content: 'Discipline reigns supreme.', timestamp: 6, phase: 'debate' },
+      { id: '7', speakerId: 'chaplin', speakerName: 'Charlie Chaplin', content: 'Humanity transcends.', timestamp: 7, phase: 'debate' },
+      { id: '8', speakerId: 'hitler', speakerName: 'Adolf Hitler', content: 'Power defines history.', timestamp: 8, phase: 'debate' },
+      { id: '9', speakerId: 'chaplin', speakerName: 'Charlie Chaplin', content: 'Truth endures.', timestamp: 9, phase: 'debate' },
+      { id: '10', speakerId: 'hitler', speakerName: 'Adolf Hitler', content: 'Strength conquers.', timestamp: 10, phase: 'debate' },
     ];
 
     const stateSummary: DebateStateSummary = {
@@ -46,15 +80,15 @@ describe('TokenMinimizer Engine', () => {
       currentPhase: 'debate',
       personaStances: { 'Charlie Chaplin': 'Freedom', 'Adolf Hitler': 'Order' },
       latestConflict: 'Stance declaration',
-      turnCount: 6,
+      turnCount: 10,
     };
 
     const payload = prepareMinimizedPayload(chaplin, [chaplin, hitler], 'Freedom vs Order', turns, stateSummary, { name: 'Alex', role: 'debater' });
 
-    // Sliding window should keep last 4 turns
-    expect(payload.slidingWindowTurns.length).toBe(4);
+    // Sliding window should keep last 8 turns
+    expect(payload.slidingWindowTurns.length).toBe(8);
     expect(payload.slidingWindowTurns[0].id).toBe('3');
-    expect(payload.slidingWindowTurns[3].id).toBe('6');
+    expect(payload.slidingWindowTurns[7].id).toBe('10');
     expect(payload.estimatedTokensSaved).toBeGreaterThan(0);
   });
 });

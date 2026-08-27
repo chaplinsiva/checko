@@ -64,6 +64,8 @@ interface WhatsAppGroupChatProps {
   isMuted?: boolean;
   onToggleMute?: () => void;
   isSpeaking?: boolean;
+  language?: 'en' | 'ta';
+  onToggleLanguage?: (lang: 'en' | 'ta') => void;
   selectedModel?: string;
   onSelectModel?: (modelId: string) => void;
   onBackToHistory?: () => void;
@@ -83,40 +85,58 @@ export interface SavedGroupItem {
 
 export const DEFAULT_PRESET_GROUPS: SavedGroupItem[] = [
   {
-    id: 'group_1',
-    groupTitle: 'Coffee with Einstein & Stephen',
-    debateMotion: 'Is backward time travel & the grandfather paradox possible?',
-    personaIds: ['einstein', 'hawking', 'buddha', 'chaplin'],
-    lastMessage: 'Spacetime curvature allows closed timelike curves theoretically...',
-    time: '10:12 AM',
+    id: 'group_ac_dc',
+    groupTitle: 'AC vs DC: War of the Currents',
+    debateMotion: 'Commercial Grid Capitalism vs Free Wireless Energy for Humanity',
+    personaIds: ['tesla', 'edison'],
+    lastMessage: 'Alternating current and wireless power transmission will electrify the globe freely!',
+    time: '10:15 AM',
+    createdAt: Date.now() - 1800000,
+  },
+  {
+    id: 'group_buddhism_jainism',
+    groupTitle: 'Buddhism vs Jainism: Paths to Liberation',
+    debateMotion: 'The Middle Way vs Absolute Non-Violence (Ahimsa) & Anekantavada: The True Path to Enlightenment',
+    personaIds: ['buddha', 'mahavira'],
+    lastMessage: 'Without absolute Ahimsa in thought, word, and deed, subtle karmic bonds remain...',
+    time: '10:05 AM',
     createdAt: Date.now() - 3600000,
   },
   {
-    id: 'group_2',
-    groupTitle: 'The Great Dictator & Satirist Circle',
-    debateMotion: 'Humor, Freedom & Propaganda in Modern Technology',
-    personaIds: ['chaplin', 'hitler', 'socrates'],
-    lastMessage: 'Human freedom and laughter transcend rigid machine control...',
+    id: 'group_windows_linux',
+    groupTitle: 'Windows vs Linux: The OS Battlefield',
+    debateMotion: 'Open Source Unix Freedom & Developer Sovereignty vs Proprietary Desktop Ecosystems',
+    personaIds: ['linus', 'billgates'],
+    lastMessage: 'Talk is cheap. Show me the code! An open kernel beats closed lock-in every time.',
     time: 'Yesterday',
     createdAt: Date.now() - 86400000,
   },
   {
-    id: 'group_3',
-    groupTitle: 'AC vs DC: Voltage & Power Vault',
-    debateMotion: 'Commercial Grid Capitalism vs Free Energy for All',
-    personaIds: ['tesla', 'edison'],
-    lastMessage: 'Wireless energy must be free to uplift all humanity...',
+    id: 'group_apple_ms',
+    groupTitle: 'Apple vs Microsoft: Closed Elegance vs Open Ubiquity',
+    debateMotion: 'Closed End-to-End Intuitive Elegance vs Standardized Mass Platform Accessibility',
+    personaIds: ['stevejobs', 'billgates'],
+    lastMessage: 'Design is not just how it looks. Design is how it works end-to-end!',
     time: '2 days ago',
     createdAt: Date.now() - 172800000,
   },
   {
-    id: 'group_4',
-    groupTitle: 'Ethics, Power & Wisdom Council',
-    debateMotion: 'The Ethics of Power & Realpolitik in Global Diplomacy',
-    personaIds: ['machiavelli', 'socrates'],
-    lastMessage: 'The unexamined life is not worth living...',
+    id: 'group_relativity_quantum',
+    groupTitle: 'Relativity vs Quantum: Nature of Reality',
+    debateMotion: 'Is the Universe Strictly Deterministic or Fundamentally Probabilistic?',
+    personaIds: ['einstein', 'hawking'],
+    lastMessage: 'God does not play dice with the universe! Spacetime geometry preserves causality.',
     time: '3 days ago',
     createdAt: Date.now() - 259200000,
+  },
+  {
+    id: 'group_power_satire',
+    groupTitle: 'Satire, Liberty & Realpolitik Arena',
+    debateMotion: 'Human Freedom, Laughter & Satire vs Statecraft and Authoritarian Power',
+    personaIds: ['chaplin', 'socrates', 'machiavelli', 'hitler'],
+    lastMessage: 'Greed has poisoned souls; more than machinery we need human laughter and freedom...',
+    time: '4 days ago',
+    createdAt: Date.now() - 345600000,
   },
 ];
 
@@ -152,6 +172,8 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
   isSpeaking = false,
   selectedModel = 'meta-llama/llama-3.2-1b-instruct',
   onSelectModel,
+  language = 'en',
+  onToggleLanguage,
   onBackToHistory,
   onSwitchGroup,
   onGroupCreated,
@@ -532,9 +554,23 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
 
         {/* Right Section: Clean Compact Controls */}
         <div className="flex items-center space-x-2 shrink-0">
+          {onToggleLanguage && (
+            <button
+              onClick={() => onToggleLanguage(language === 'ta' ? 'en' : 'ta')}
+              className={`px-2.5 py-1.5 rounded-xl transition-all border text-xs font-bold flex items-center gap-1 cursor-pointer ${
+                language === 'ta'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                  : 'bg-[#202c33]/80 hover:bg-[#2a3942] text-[#8696a0] hover:text-white border-[#222d34]'
+              }`}
+              title={language === 'ta' ? 'Current: தமிழ் (Tamil). Click to switch to English' : 'Current: English. Click to switch to தமிழ் (Tamil)'}
+            >
+              <span>{language === 'ta' ? '🇮🇳 தமிழ்' : '🇬🇧 EN'}</span>
+            </button>
+          )}
+
           <button
             onClick={handleCreateNewChat}
-            className="px-3 py-1.5 bg-[#00a884] hover:bg-teal-600 text-white rounded-xl text-xs font-semibold flex items-center space-x-1 transition-all shadow-sm"
+            className="px-3 py-1.5 bg-[#00a884] hover:bg-teal-600 text-white rounded-xl text-xs font-semibold flex items-center space-x-1 transition-all shadow-sm cursor-pointer"
             title="Create New Debate Chat"
           >
             <Plus className="w-3.5 h-3.5" />

@@ -1,4 +1,6 @@
+// @vitest-environment happy-dom
 import { renderHook, act } from '@testing-library/react';
+import { describe, test, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { useTextToSpeech } from '../useTextToSpeech';
 import { Persona } from '@/types/debate';
 
@@ -25,11 +27,11 @@ describe('useTextToSpeech Hook', () => {
   };
 
   const mockSpeechSynthesis = {
-    speak: jest.fn((utt) => {
+    speak: vi.fn((utt: any) => {
       if (utt.onstart) utt.onstart();
     }),
-    cancel: jest.fn(),
-    getVoices: jest.fn(() => [
+    cancel: vi.fn(),
+    getVoices: vi.fn(() => [
       { name: 'Google UK English Male', lang: 'en-GB' },
       { name: 'Google US English', lang: 'en-US' },
     ]),
@@ -37,9 +39,10 @@ describe('useTextToSpeech Hook', () => {
   };
 
   beforeAll(() => {
-    (global as any).SpeechSynthesisUtterance = jest.fn().mockImplementation((text) => {
+    (global as any).SpeechSynthesisUtterance = vi.fn().mockImplementation(function (this: any, text: string) {
       mockUtterance.text = text;
-      return mockUtterance;
+      Object.assign(this, mockUtterance);
+      return this;
     });
     Object.defineProperty(window, 'speechSynthesis', {
       value: mockSpeechSynthesis,
@@ -48,7 +51,7 @@ describe('useTextToSpeech Hook', () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('initializes with supported status and loads voices', () => {
@@ -81,9 +84,10 @@ describe('useTextToSpeech Hook', () => {
 
     expect(mockSpeechSynthesis.cancel).toHaveBeenCalled();
     expect(mockSpeechSynthesis.speak).toHaveBeenCalled();
-    expect(mockUtterance.text).toBe('Laughter defeats dogma!');
-    expect(mockUtterance.pitch).toBe(1.15);
-    expect(mockUtterance.rate).toBe(1.05);
+    const passedUtterance = mockSpeechSynthesis.speak.mock.calls[0][0];
+    expect(passedUtterance.text).toBe('Laughter defeats dogma!');
+    expect(passedUtterance.pitch).toBe(1.15);
+    expect(passedUtterance.rate).toBe(1.05);
     expect(result.current.currentlySpeakingTurnId).toBe('turn_1');
     expect(result.current.currentlySpeakingSpeakerId).toBe('chaplin');
   });

@@ -7,42 +7,66 @@ export interface MinimizedPayload {
   slidingWindowTurns: DebateTurn[];
   estimatedPromptTokens: number;
   estimatedTokensSaved: number;
+  language?: 'en' | 'ta';
 }
 
 /**
  * Builds an ultra-compact system instruction for a specific persona
- * adhering to strict token constraints while strongly enforcing topic focus.
+ * adhering to strict token constraints while strongly enforcing topic focus,
+ * natural WhatsApp banter, stance preservation, and multi-language support (English / Tamil).
  */
 export function buildSystemInstruction(
   persona: Persona,
   opponentPersonas: Persona[],
   topic: string,
   userProfile?: UserProfile,
-  phase: DebatePhase = 'greeting'
+  phase: DebatePhase = 'greeting',
+  language: 'en' | 'ta' = 'en'
 ): string {
   const opponentNames = opponentPersonas.map((p) => p.name).join(', ');
+  const firstOpponent = opponentPersonas[0]?.name || 'everyone';
   const userName = userProfile?.name || 'User';
 
   let phaseRule = '';
-  if (phase === 'greeting') {
-    phaseRule = `Say a quick 1-line in-character greeting to ${userName} and the group, then give your opening take on "${topic}" with a real fact or principle in 1 line.`;
-  } else if (phase === 'stance') {
-    phaseRule = `State your core stance on "${topic}" using a real historical or scientific fact in 1-2 short sentences.`;
+  if (language === 'ta') {
+    if (phase === 'greeting') {
+      phaseRule = `தொடக்க நிலை: குழுவினருக்கு சுருக்கமாக 1 வரியில் தொடக்க வணக்கம் கூறி, "${topic}" பற்றிய உங்கள் பார்வையை 1 வரியில் உண்மையான வரலாற்று/அறிவியல் ஆதாரத்துடன் கூறுங்கள்.`;
+    } else if (phase === 'stance') {
+      phaseRule = `நிலைப்பாடு: "${topic}" பற்றிய உங்கள் உறுதியான நிலைப்பாட்டை 1-2 வரிகளில் தமிழ் மொழியில் முன்வையுங்கள்.`;
+    } else {
+      phaseRule = `விவாதம்: நேரடி குழு உரையாடல் / கால் சாட் (live call chat) பாணியில் பேசுங்கள். ஒவ்வொரு முறையும் நபரின் பெயரை விளித்து அழைக்காமல் (no forced name prefixing), நேரடியாக வாதத்தை மறுக்கலாம், கேள்வி கேட்கலாம் அல்லது அறிவியல் உண்மையை பேசலாம் (எ.கா: "காரண-காரிய விதி இதை அனுமதிக்காது", "அப்படியென்றால் தாத்தா முரண்பாட்டை எப்படி தீர்ப்பீர்கள்?", "இதில் ஒரு அடிப்படை அறிவியல் பிழை உள்ளது").`;
+    }
   } else {
-    phaseRule = `Respond directly to the last point about "${topic}". Bring a specific real-world fact, scientific law, or historical lesson in 1-2 short sentences.`;
+    if (phase === 'greeting') {
+      phaseRule = `Opening turn: Greet the group with a natural quick opening, then state your opening take on "${topic}" with a real fact in 1 line.`;
+    } else if (phase === 'stance') {
+      phaseRule = `Stance turn: State your core stance on "${topic}" using a real historical or scientific principle in 1-2 short sentences.`;
+    } else {
+      phaseRule = `Debate turn: Talk like real people in a live group voice call or active chat. Do NOT repeatedly prefix every single line with the opponent's name. Jump directly into your counter-argument, ask a sharp question, or state the physical/historical fact directly (e.g. "That completely breaks causality.", "How do you explain the paradox then?", "General relativity proves otherwise.").`;
+    }
   }
+
+  const languageDirective = language === 'ta'
+    ? `LANGUAGE: TAMIL (தமிழ்). You MUST write your response in natural, authentic Tamil script (தமிழ்) as a real person chatting on WhatsApp. Keep your tone and stance intact.`
+    : `LANGUAGE: ENGLISH. Write in natural WhatsApp banter English.`;
 
   return `You are ${persona.name}, ${persona.title}. ${persona.bio}
 Your voice: ${persona.tone}.
+Your philosophical stance: "${persona.defaultStance}".
 
-You are in a fast-paced WhatsApp group chat discussing: "${topic}"
+You are in a fast-paced WhatsApp group chat debating: "${topic}"
+
+${languageDirective}
 
 ${phaseRule}
 
 STRICT CHAT RULES:
-- Length: EXACTLY 1 OR 2 SHORT LINES ONLY (maximum 25-35 words).
-- Real Data: Ground your argument in real historical facts, scientific theories, mathematical laws, or philosophical tenets authentic to ${persona.name}.
-- Format: Natural WhatsApp chat style. Plain text only. Never use headers, bullet points, asterisks, or quotes. Finish every sentence completely.`;
+- Length: EXACTLY 1 OR 2 SHORT LINES ONLY (maximum 20-35 words).
+- CONTINUITY & EVOLUTION: Follow the natural thread of the ongoing dialogue. Do NOT repeat points or circle around the same topic. Continually advance the debate into new angles, deeper scientific mechanisms, or historical implications.
+- Live Call Flow (No Robotic Formulas): Do NOT mechanically start every reply with the debater's name (avoid "Stephen, ...", "Albert, ...", "ஸ்டீபன், ..."). Vary your openers naturally like a real group phone call or fast chat.
+- NO Affirmation Loops: NEVER start with "Yes", "Yeah", "ஆம்", "ஆமாம்", "சரி", or "I agree".
+- Stance & Facts: Strictly maintain ${persona.name}'s core stance ("${persona.defaultStance}") using real historical, scientific, or mathematical facts.
+- Format: Plain text only. Never use headers, bullet points, asterisks, or quotes. Finish every sentence completely.`;
 }
 
 /**
@@ -64,45 +88,47 @@ export function buildStateSummaryText(
 }
 
 /**
- * Prepares the minimized API payload using a Sliding Window of K=4 last turns.
+ * Compiles a token-minimized prompt payload applying sliding window (K=8)
+ * and rolling state summary.
  */
 export function prepareMinimizedPayload(
   persona: Persona,
-  allPersonas: Persona[],
+  activePersonas: Persona[],
   topic: string,
-  fullTurns: DebateTurn[],
+  turns: DebateTurn[],
   stateSummary: DebateStateSummary,
-  userProfile?: UserProfile
+  userProfile?: UserProfile,
+  language: 'en' | 'ta' = 'en'
 ): MinimizedPayload {
-  const opponentPersonas = allPersonas.filter((p) => p.id !== persona.id);
+  const opponentPersonas = activePersonas.filter((p) => p.id !== persona.id);
   const systemInstruction = buildSystemInstruction(
     persona,
     opponentPersonas,
     topic,
     userProfile,
-    stateSummary.currentPhase
+    stateSummary.currentPhase,
+    language
   );
   const stateSummaryText = buildStateSummaryText(topic, stateSummary, userProfile);
 
-  // Expanded sliding window: last 4 turns for richer debate context
-  const slidingWindowTurns = fullTurns.slice(-4);
+  // Sliding window K=8 (keep last 8 turns for rich dialogue continuity)
+  const slidingWindowTurns = turns.slice(-8);
 
-  // Token calculations estimation (~4 chars per token)
+  // Token estimates (approx 1 token per 4 characters)
   const systemTokens = Math.ceil(systemInstruction.length / 4);
-  const stateTokens = Math.ceil(stateSummaryText.length / 4);
-  const slidingTurnsTokens = Math.ceil(
-    slidingWindowTurns.reduce((acc, t) => acc + t.content.length, 0) / 4
+  const summaryTokens = Math.ceil(stateSummaryText.length / 4);
+  const turnsTokens = slidingWindowTurns.reduce(
+    (acc, t) => acc + Math.ceil(t.content.length / 4) + 10,
+    0
   );
+  const estimatedPromptTokens = systemTokens + summaryTokens + turnsTokens;
 
-  const estimatedPromptTokens = systemTokens + stateTokens + slidingTurnsTokens;
-
-  // Unoptimized token count if full turns history were sent
-  const fullTurnsTokens = Math.ceil(
-    fullTurns.reduce((acc, t) => acc + t.content.length, 0) / 4
+  // Calculate tokens saved compared to full history
+  const fullTurnsTokens = turns.reduce(
+    (acc, t) => acc + Math.ceil(t.content.length / 4) + 10,
+    0
   );
-  const unoptimizedTokens = systemTokens * 2 + fullTurnsTokens;
-
-  const estimatedTokensSaved = Math.max(0, unoptimizedTokens - estimatedPromptTokens);
+  const estimatedTokensSaved = Math.max(0, fullTurnsTokens - turnsTokens);
 
   return {
     systemInstruction,
@@ -111,6 +137,6 @@ export function prepareMinimizedPayload(
     slidingWindowTurns,
     estimatedPromptTokens,
     estimatedTokensSaved,
+    language,
   };
 }
-
