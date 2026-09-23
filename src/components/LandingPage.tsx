@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { Persona } from '@/types/debate';
 import { SAMPLE_DEBATES, SampleDebate } from '@/lib/sample-debates';
+import { SAMPLE_BRAINSTORMS } from '@/lib/sample-brainstorms';
+import { BrainstormIdea } from '@/types/brainstorm';
 import {
   MessageSquare,
   Sparkles,
@@ -19,6 +21,9 @@ import {
   Swords,
   Layers,
   Sparkle,
+  Lightbulb,
+  ThumbsUp,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -26,6 +31,8 @@ interface LandingPageProps {
   onCreateNewChat: () => void;
   onOpenCharacterModal: () => void;
   onStartSampleDebate?: (debate: SampleDebate) => void;
+  onOpenBrainstormModal?: () => void;
+  onStartSampleBrainstorm?: (sample: BrainstormIdea) => void;
   allPersonas: Persona[];
   savedGroupsCount: number;
   language?: 'en' | 'ta';
@@ -37,6 +44,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onCreateNewChat,
   onOpenCharacterModal,
   onStartSampleDebate,
+  onOpenBrainstormModal,
+  onStartSampleBrainstorm,
   allPersonas,
   savedGroupsCount,
   language = 'en',
@@ -99,6 +108,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
           )}
 
+          {onOpenBrainstormModal && (
+            <button
+              onClick={onOpenBrainstormModal}
+              className="px-3 py-2 text-xs font-bold rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              title="Launch Idea Brainstorming Incubator"
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+              <span>Brainstorm Idea</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenCharacterModal}
             className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-[#202c33] hover:bg-[#2a3942] text-[#8696a0] hover:text-white border border-[#2a3942] transition-all flex items-center gap-1.5 cursor-pointer"
@@ -144,10 +164,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </p>
 
         {/* Primary CTA Button Group */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mb-12">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full max-w-xl mb-12">
+          {onOpenBrainstormModal && (
+            <button
+              onClick={onOpenBrainstormModal}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-base shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+            >
+              <Lightbulb className="w-5 h-5 text-yellow-100 group-hover:rotate-12 transition-transform" />
+              <span>Brainstorm Idea</span>
+              <Sparkles className="w-4 h-4 text-yellow-100" />
+            </button>
+          )}
+
           <button
             onClick={onEnterChatHub}
-            className="w-full sm:w-auto flex-1 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#00a884] to-teal-600 hover:from-[#028b6d] hover:to-teal-700 text-white font-bold text-base shadow-xl shadow-[#00a884]/25 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#00a884] to-teal-600 hover:from-[#028b6d] hover:to-teal-700 text-white font-bold text-base shadow-xl shadow-[#00a884]/25 transition-all flex items-center justify-center gap-2 group cursor-pointer"
           >
             <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
             <span>Open Chat Hub</span>
@@ -156,12 +187,117 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <button
             onClick={onCreateNewChat}
-            className="w-full sm:w-auto flex-1 px-6 py-3.5 rounded-2xl bg-[#202c33] hover:bg-[#2a3942] text-white font-semibold text-base border border-[#2a3942] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#202c33] hover:bg-[#2a3942] text-white font-semibold text-sm border border-[#2a3942] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
           >
-            <PlusCircle className="w-5 h-5 text-[#00a884]" />
-            <span>Create Custom Debate</span>
+            <PlusCircle className="w-4 h-4 text-[#00a884]" />
+            <span>New Debate</span>
           </button>
         </div>
+
+        {/* ============================================================ */}
+        {/* STARTUP & APP BRAINSTORMING INCUBATOR SECTION */}
+        {/* ============================================================ */}
+        <section className="w-full mb-16 text-left">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 pb-4 border-b border-[#222d34]/80 gap-4">
+            <div>
+              <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1.5">
+                <Lightbulb className="w-4 h-4" />
+                <span>Idea Incubator & Pros/Cons Analyzer</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+                Startup & App Ideas Ready to Brainstorm
+              </h2>
+              <p className="text-xs sm:text-sm text-[#8696a0] mt-1">
+                Pitch an app, stress-test business models, discover blind spots, and run live Pros & Cons analysis with specialized AI advisors.
+              </p>
+            </div>
+
+            {onOpenBrainstormModal && (
+              <button
+                onClick={onOpenBrainstormModal}
+                className="px-4 py-2 bg-[#202c33] hover:bg-[#2a3942] text-amber-300 border border-amber-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all self-start md:self-auto cursor-pointer"
+              >
+                <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                <span>Pitch Custom Idea</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {SAMPLE_BRAINSTORMS.slice(0, 3).map((idea) => {
+              const squadPersonas = idea.personaIds.map((id) => allPersonas.find((p) => p.id === id)).filter(Boolean);
+              const topPro = idea.initialPros?.[0];
+              const topCon = idea.initialCons?.[0];
+
+              return (
+                <div
+                  key={idea.id}
+                  className="bg-[#111b21] border border-[#222d34] hover:border-amber-500/50 rounded-3xl p-5 flex flex-col justify-between transition-all hover:shadow-xl hover:shadow-amber-500/5 group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        {idea.badge || 'Startup Dev'}
+                      </span>
+
+                      {/* Squad Avatars */}
+                      <div className="flex -space-x-1.5 overflow-hidden">
+                        {squadPersonas.slice(0, 4).map((p) => (
+                          <div
+                            key={p!.id}
+                            className="w-5 h-5 rounded-full border border-[#111b21] overflow-hidden text-[8px] flex items-center justify-center font-bold"
+                            style={{ backgroundColor: p!.avatarColor }}
+                            title={p!.name}
+                          >
+                            {p!.avatarImage ? (
+                              <img src={p!.avatarImage} alt={p!.name} className="w-full h-full object-cover" />
+                            ) : (
+                              p!.avatarIcon || '👤'
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <h3 className="text-sm sm:text-base font-bold text-white mb-1.5 group-hover:text-amber-300 transition-colors">
+                      {idea.title}
+                    </h3>
+                    <p className="text-xs text-[#8696a0] leading-relaxed line-clamp-2 mb-3">
+                      {idea.tagline}
+                    </p>
+
+                    {/* Preview Pro & Con Pills */}
+                    <div className="space-y-1.5 mb-4 text-[10px]">
+                      {topPro && (
+                        <div className="flex items-start gap-1.5 text-emerald-300/90 bg-emerald-950/30 border border-emerald-800/30 px-2 py-1 rounded-lg">
+                          <ThumbsUp className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
+                          <span className="line-clamp-1">{topPro}</span>
+                        </div>
+                      )}
+                      {topCon && (
+                        <div className="flex items-start gap-1.5 text-rose-300/90 bg-rose-950/30 border border-rose-800/30 px-2 py-1 rounded-lg">
+                          <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0 mt-0.5" />
+                          <span className="line-clamp-1">{topCon}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {onStartSampleBrainstorm && (
+                    <button
+                      onClick={() => onStartSampleBrainstorm(idea)}
+                      className="w-full py-2.5 bg-[#202c33] group-hover:bg-amber-500 group-hover:text-[#111b21] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Start Brainstorming</span>
+                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         {/* ============================================================ */}
         {/* FEATURED SAMPLE DEBATES / CLASH ARENA SECTION */}

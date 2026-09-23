@@ -28,10 +28,13 @@ import {
   VolumeX,
   Maximize2,
   Minimize2,
+  Lightbulb,
 } from 'lucide-react';
 
 import { ModelSwitcher } from './ModelSwitcher';
 import { NewGroupModal } from './NewGroupModal';
+import { ProsConsAnalyzerPanel } from './ProsConsAnalyzerPanel';
+import { BrainstormIdea } from '@/types/brainstorm';
 import { getStoredApiKey, getOpenRouterApiKey } from '@/lib/gemini';
 
 interface WhatsAppGroupChatProps {
@@ -71,6 +74,8 @@ interface WhatsAppGroupChatProps {
   onBackToHistory?: () => void;
   onSwitchGroup?: (group: SavedGroupItem) => void;
   onGroupCreated?: (topic: string, personaIds: string[], autoGroupName: string) => void;
+  onOpenBrainstormModal?: () => void;
+  activeBrainstormIdea?: BrainstormIdea;
 }
 
 export interface SavedGroupItem {
@@ -177,8 +182,11 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
   onBackToHistory,
   onSwitchGroup,
   onGroupCreated,
+  onOpenBrainstormModal,
+  activeBrainstormIdea,
 }) => {
   const [inputText, setInputText] = useState('');
+  const [isProsConsPanelOpen, setIsProsConsPanelOpen] = useState(true);
   
   // Header inline title & motion editing state
   const [isEditingHeaderDetails, setIsEditingHeaderDetails] = useState(false);
@@ -258,6 +266,11 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
     }
     return 'Coffee with Einstein & Stephen';
   });
+
+  const isBrainstormSession =
+    topic.toLowerCase().includes('brainstorm') ||
+    groupTitle.toLowerCase().includes('brainstorm') ||
+    Boolean(activeBrainstormIdea);
 
   // Sync last turn message to active saved group item
   useEffect(() => {
@@ -568,6 +581,30 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
             </button>
           )}
 
+          {isBrainstormSession ? (
+            <button
+              onClick={() => setIsProsConsPanelOpen((prev) => !prev)}
+              className={`px-2.5 py-1.5 rounded-xl transition-all border text-xs font-bold flex items-center gap-1.5 cursor-pointer ${
+                isProsConsPanelOpen
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                  : 'bg-[#202c33]/80 hover:bg-[#2a3942] text-[#8696a0] hover:text-white border-[#222d34]'
+              }`}
+              title="Toggle Idea Canvas & Pros/Cons Analyzer"
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Idea Canvas</span>
+            </button>
+          ) : onOpenBrainstormModal ? (
+            <button
+              onClick={onOpenBrainstormModal}
+              className="px-2.5 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-semibold flex items-center space-x-1 transition-all cursor-pointer"
+              title="Launch Idea Brainstorming Incubator"
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Brainstorm</span>
+            </button>
+          ) : null}
+
           <button
             onClick={handleCreateNewChat}
             className="px-3 py-1.5 bg-[#00a884] hover:bg-teal-600 text-white rounded-xl text-xs font-semibold flex items-center space-x-1 transition-all shadow-sm cursor-pointer"
@@ -683,6 +720,17 @@ export const WhatsAppGroupChat: React.FC<WhatsAppGroupChatProps> = ({
           </button>
         </div>
       </div>
+
+      {/* 2.5 Live Brainstorm Idea Canvas & Pros/Cons Analyzer Panel */}
+      {isBrainstormSession && (
+        <ProsConsAnalyzerPanel
+          topic={topic}
+          turns={turns}
+          initialIdea={activeBrainstormIdea}
+          isOpen={isProsConsPanelOpen}
+          onToggleOpen={() => setIsProsConsPanelOpen((prev) => !prev)}
+        />
+      )}
 
       {/* 3. Minimalist Chat Feed */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#0b141a] relative scroll-smooth">
