@@ -50,6 +50,13 @@ export function buildSystemInstruction(
     ? `LANGUAGE: TAMIL (தமிழ்). You MUST write your response in natural, authentic Tamil script (தமிழ்) as a real person chatting on WhatsApp. Keep your tone and stance intact.`
     : `LANGUAGE: ENGLISH. Write in natural WhatsApp banter English.`;
 
+  const isBrainstorm = topic.toLowerCase().includes('brainstorm');
+  const brainstormDirective = isBrainstorm
+    ? `\nBRAINSTORM & PROS/CONS MODE:
+- This is an active startup and product incubation room.
+- Critically stress-test the product, pinpoint vulnerabilities ('Con: ...' or 'Risk: ...'), highlight unfair advantages ('Pro: ...'), and suggest high-value architectural or UX improvements ('[IMPROVEMENT] ...').`
+    : '';
+
   return `You are ${persona.name}, ${persona.title}. ${persona.bio}
 Your voice: ${persona.tone}.
 Your philosophical stance: "${persona.defaultStance}".
@@ -57,6 +64,7 @@ Your philosophical stance: "${persona.defaultStance}".
 You are in a fast-paced WhatsApp group chat debating: "${topic}"
 
 ${languageDirective}
+${brainstormDirective}
 
 ${phaseRule}
 

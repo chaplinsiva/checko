@@ -199,7 +199,9 @@ export function deleteCustomPersona(id: string): Persona[] {
   }
 }
 
+import { STARTUP_PERSONAS } from './brainstorm-personas';
+
 export function getAllPersonas(): Persona[] {
-  return [...BUILTIN_PERSONAS, ...getCustomPersonas()];
+  return [...BUILTIN_PERSONAS, ...STARTUP_PERSONAS, ...getCustomPersonas()];
 }
 

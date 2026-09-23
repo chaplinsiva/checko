@@ -8,7 +8,9 @@ import { LandingPage } from '@/components/LandingPage';
 import { ChatHistoryHub } from '@/components/ChatHistoryHub';
 import { CharacterModal } from '@/components/CharacterModal';
 import { NewGroupModal } from '@/components/NewGroupModal';
+import { BrainstormModal } from '@/components/BrainstormModal';
 import { Persona } from '@/types/debate';
+import { BrainstormIdea } from '@/types/brainstorm';
 
 export type AppView = 'landing' | 'history' | 'chat';
 
@@ -17,6 +19,8 @@ export default function Home() {
   const [allPersonas, setAllPersonas] = useState<Persona[]>(BUILTIN_PERSONAS);
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState<boolean>(false);
   const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState<boolean>(false);
+  const [isBrainstormModalOpen, setIsBrainstormModalOpen] = useState<boolean>(false);
+  const [activeBrainstormIdea, setActiveBrainstormIdea] = useState<BrainstormIdea | undefined>(undefined);
 
   // Saved group items
   const [savedGroups, setSavedGroups] = useState<SavedGroupItem[]>(DEFAULT_PRESET_GROUPS);
@@ -176,6 +180,40 @@ export default function Home() {
     setCurrentView('chat');
   };
 
+  const handleLaunchBrainstorm = (idea: BrainstormIdea) => {
+    setActiveBrainstormIdea(idea);
+    const newGroupId = `group_brainstorm_${idea.id}_${Date.now()}`;
+    const autoGroupName = `💡 ${idea.title}`;
+    const motion = `[Brainstorming: ${idea.title}] Problem: ${idea.problem} | Solution: ${idea.solution} | Target Audience: ${idea.targetAudience}`;
+    setActiveGroupTitle(autoGroupName);
+    engine.switchGroup(newGroupId, motion, idea.personaIds);
+
+    const newGroupItem: SavedGroupItem = {
+      id: newGroupId,
+      groupTitle: autoGroupName,
+      debateMotion: motion,
+      personaIds: idea.personaIds,
+      lastMessage: `Incubator room started: "${idea.tagline || idea.title}" (Top Pro: ${idea.initialPros?.[0] || 'High impact'})`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      createdAt: Date.now(),
+    };
+
+    setSavedGroups((prev) => {
+      const updated = [newGroupItem, ...prev.filter((g) => g.groupTitle !== autoGroupName)];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('checko_saved_groups', JSON.stringify(updated));
+          localStorage.setItem('checko_active_group_title', autoGroupName);
+          localStorage.setItem('checko_active_group_id', newGroupId);
+        } catch (e) {}
+      }
+      return updated;
+    });
+
+    setIsBrainstormModalOpen(false);
+    setCurrentView('chat');
+  };
+
   return (
     <main className="h-screen w-screen bg-[#0b141a] text-slate-100 flex flex-col overflow-hidden font-sans selection:bg-[#00a884] selection:text-white">
       {/* 1. Landing Page View */}
@@ -185,6 +223,8 @@ export default function Home() {
           onCreateNewChat={() => setIsNewGroupModalOpen(true)}
           onOpenCharacterModal={() => setIsCharacterModalOpen(true)}
           onStartSampleDebate={handleStartSampleDebate}
+          onOpenBrainstormModal={() => setIsBrainstormModalOpen(true)}
+          onStartSampleBrainstorm={handleLaunchBrainstorm}
           allPersonas={allPersonas}
           savedGroupsCount={savedGroups.length}
           language={engine.language}
@@ -249,6 +289,8 @@ export default function Home() {
             onBackToHistory={() => setCurrentView('history')}
             onSwitchGroup={handleSelectGroup}
             onGroupCreated={handleGroupCreatedFromModal}
+            onOpenBrainstormModal={() => setIsBrainstormModalOpen(true)}
+            activeBrainstormIdea={activeBrainstormIdea}
           />
         </div>
       )}
@@ -266,6 +308,15 @@ export default function Home() {
         onClose={() => setIsNewGroupModalOpen(false)}
         allPersonas={allPersonas}
         onCreateGroup={handleGroupCreatedFromModal}
+        onOpenCharacterModal={() => setIsCharacterModalOpen(true)}
+      />
+
+      {/* Brainstorming Idea Modal (Accessible across views) */}
+      <BrainstormModal
+        isOpen={isBrainstormModalOpen}
+        onClose={() => setIsBrainstormModalOpen(false)}
+        allPersonas={allPersonas}
+        onLaunchBrainstorm={handleLaunchBrainstorm}
         onOpenCharacterModal={() => setIsCharacterModalOpen(true)}
       />
     </main>
